@@ -19,6 +19,20 @@ def checkPlacementCollision(array, X, Y):
     return False
 
 
+# check collison between the kilobot and array of kilobots
+def checkCollisionLoop(kilobot, kilobots_array_temp, x_temp, y_temp):
+    for it2 in kilobots_array_temp:
+        if kilobot == it2:
+            continue
+        if kilobot.checkSingleCollisionPrediction(it.x + x_temp, it.y + y_temp, it2.x, it2.y):
+            return True
+
+
+# get random int number between -1 and 1
+def getRandint():
+    return random2.randint(-1, 1)
+
+
 # tworzenie ekranu
 screen = pygame.display.set_mode((800, 600))
 
@@ -31,18 +45,11 @@ while running:
 
     screen.fill((255, 255, 255))
 
+    # random movement
     for it in kilobots:
-        collision = 0
-        x = random2.randint(-1, 1)
-        y = random2.randint(-1, 1)
-
-        for it2 in kilobots:
-            if it == it2:
-                continue
-            if it.checkSingleCollision(it2.x, it2.y) and
-                collision = 1
-                break
-        if collision == 0:
+        x = getRandint()
+        y = getRandint()
+        if not checkCollisionLoop(it, kilobots, x, y):
             it.move(x, y)
         it.draw(screen)
 

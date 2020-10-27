@@ -33,9 +33,9 @@ class Kilobot:
             Dif = sqrt(xDif ** 2 + yDif ** 2)
             if Dif.real < 40:
                 return True
-    def checkSingleCollisionPrediction(self,self_X,self_Y X, Y):
-            xDif = fabs(self.x - X)
-            yDif = fabs(self.y - Y)
+    def checkSingleCollisionPrediction(self,self_X,self_Y, X, Y):
+            xDif = fabs(self_X - X)
+            yDif = fabs(self_Y - Y)
             Dif = sqrt(xDif ** 2 + yDif ** 2)
             if Dif.real < 40:
                 return True
