@@ -2,8 +2,8 @@ from math import fabs, sqrt
 
 import pygame
 import random2
-
 import kilobotClass
+from button import button
 
 # inicjalizacja biblioteki
 pygame.init()
@@ -33,17 +33,26 @@ def getRandint():
     return random2.randint(-1, 1)
 
 
+def reddrawWindow():
+    screen.fill((255, 255, 255))
+    resetButton.draw(screen, (0, 0, 0))
+
+
+resx = 800
+resy = 600
 # tworzenie ekranu
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((resx, resy))
 
 # deklaracja tablicy kilobotow
 kilobots = []
 
+# tworzenie przycisku reset
+resetButton = button((0, 255, 0), 0, 550, 100, 50, 'Reset')
+
 # glowna pętla
 running = True
 while running:
-
-    screen.fill((255, 255, 255))
+    reddrawWindow()
 
     # random movement
     for it in kilobots:
@@ -54,6 +63,7 @@ while running:
         it.draw(screen)
 
     for event in pygame.event.get():
+        pos = pygame.mouse.get_pos()
 
         if event.type == pygame.QUIT:
             running = False
@@ -62,5 +72,10 @@ while running:
                 mPosX, mPosY = pygame.mouse.get_pos()
                 if not checkPlacementCollision(kilobots, mPosX, mPosY):
                     kilobots.append(kilobotClass.Kilobot(mPosX, mPosY, 210, 210, 210))
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if resetButton.isOver(pos):
+                print('clicked reset button')
+                kilobots.clear()
 
     pygame.display.update()
