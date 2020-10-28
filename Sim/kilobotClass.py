@@ -4,6 +4,12 @@ from math import fabs, pi, sin, cos
 import pygame
 
 
+def drawKilobots(kilobotArray, screen, promien):
+    for it in kilobotArray:
+        position = (it.x, it.y)
+        it.drawKilobot(screen, promien)
+
+
 class Kilobot:
 
     def __init__(self, id, x, y, r, g, b):
