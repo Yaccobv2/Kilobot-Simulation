@@ -1,13 +1,3 @@
-<<<<<<< Updated upstream
-class Kilobot:
-
-    def __init__(me, x, y, r, g, b):
-        me.x = x
-        me.y = y
-        me.r = r
-        me.g = g
-        me.b = b
-=======
 from cmath import sqrt
 from math import fabs, pi, sin, cos
 
@@ -23,17 +13,10 @@ class Kilobot:
         self.r = r
         self.g = g
         self.b = b
->>>>>>> Stashed changes
 
     id = 0
     x = 0
     y = 0
-<<<<<<< Updated upstream
-    r = 255
-    g = 0
-    b = 0
-    fi = 0
-=======
     r = 220
     g = 220
     b = 220
@@ -80,4 +63,3 @@ class Kilobot:
                 self_Y > (resy - promien - 55 + 1)):
             self.isStuck = 1
             return True
->>>>>>> Stashed changes
