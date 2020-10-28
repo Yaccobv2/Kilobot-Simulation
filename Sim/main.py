@@ -127,6 +127,7 @@ while running:
                     print('clicked reset button')
                     kilobots.clear()
                     kilobotID = 0
+                    kilobotsNumber = 0
                     enable = False
 
                 if startButton.isOver(pos):
