@@ -12,7 +12,6 @@ resx = 600
 resy = 655
 
 
-
 def checkPlacementCollision(array, X, Y):
     for itr in array:
         xDif = fabs(X - itr.x)
@@ -42,25 +41,59 @@ def checkCollisionLoop(kilobot, kilobots_array_temp, x_temp, y_temp, resx, resy)
         if kilobot.checkSingleCollisionPrediction(kilobot.x + x_temp, kilobot.y + y_temp, it.x, it.y, promienInput):
             print("Kilobot " + str(it.id) + " collided with a different robot")
             return True
-        if kilobot.checkWallCollisionPrediction(kilobot.x + x_temp, kilobot.y + y_temp, resx, resy, promienInput):
-            print("Kilobot " + str(it.id) + " collided with a wall")
+    if kilobot.checkWallCollisionPrediction(kilobot.x + x_temp, kilobot.y + y_temp, resx, resy, promienInput):
+        print("Kilobot " + str(kilobot.id) + " collided with a wall")
+        return True
+
+
+def checkCollisionLoopTEST(kilobot, kilobots_array_temp, resx, resy, forward, fi_temp):
+    for it in kilobots_array_temp:
+        if kilobot == it:
+            continue
+        if kilobot.checkRotatonCollisionPrediction(it.x, it.y, promienInput, forward, fi_temp):
+            print("Kilobot " + str(it.id) + " collided with a different robot")
             return True
+    if kilobot.checkRotatonWallCollisionPrediction(resx, resy, promienInput, forward, fi_temp):
+        print("Kilobot " + str(kilobot.id) + " collided with a wall")
+        return True
+
+
+def checkCollisionRotateLoop(kilobot, kilobots_array_temp, resx, resy, forward, fi_temp):
+    for it in kilobots_array_temp:
+        if kilobot == it:
+            continue
+        if kilobot.checkRotatonCollisionPrediction(it.x, it.y, promienInput, forward, fi_temp):
+            print(" error1")
+            return True
+    if kilobot.checkRotatonWallCollisionPrediction(resx, resy, promienInput, forward, fi_temp):
+        print("error2")
+        return True
 
 
 def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
     if enableTag:
         for it in kilobotsArray:
             forward = 1
+            move = getRandSpin()
             rotation = 0
             if getRandBool():
                 rotation = getRandSpin()
 
-            if not checkCollisionLoop(it, kilobotsArray, forward, rotation, resx, resy):
+            if not checkCollisionLoopTEST(it, kilobotsArray, resx, resy, forward,
+                                                5 * rotation):
                 it.moveKilobot(forward)
+                it.rotateKilobot(5 * rotation)
+                if not checkCollisionRotateLoop(it, kilobotsArray, resx, resy, move,
+                                                5 * rotation):
+                    it.rotateKilobot(5 * rotation)
+
             else:
-                it.isStuck = 1
+                if not checkCollisionLoopTEST(it, kilobotsArray, resx, resy, -forward,
+                                                5 * rotation):
+                    it.isStuck = 1
+                    it.moveKilobot(-forward)
+
             it.drawKilobot(screen, promienInput)
-            it.rotateKilobot(5 * rotation)
 
 
 # get random int number between -1 and 1
@@ -98,6 +131,7 @@ def addKilobotEvent(pos):
             kilobotID = kilobotID + 1
             kilobotsNumber = kilobotsNumber + 1
 
+
 def removeKilobotEvent(pos):
     global kilobotsNumber, kilobotID
     print("Right mouse click at: " + str(pos[0]) + ", " + str(pos[1]))
@@ -134,6 +168,7 @@ def pauseEvent(pos):
         print('Clicked start button')
         enable = False
 
+
 def inputEventHandler():
     global running
     for event in pygame.event.get():
@@ -165,7 +200,6 @@ numberView = button((255, 255, 255), resx / 2 - 50, 50, 100, 50, str(kilobotsNum
 # glowna pętla
 running = True
 while running:
-
     screen.fill((255, 255, 255))
     # random movement
     kilobotsMovement(enable, kilobots, resx, resy)

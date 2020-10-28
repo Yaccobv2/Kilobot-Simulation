@@ -40,6 +40,11 @@ class Kilobot:
         self.x = self.x + xSpeed
         self.y = self.y + ySpeed
 
+    def move(self, x,y):
+
+        self.x = self.x + x
+        self.y = self.y + y
+
     def calculateSpeedXY(self, speed):
         angle = self.fi * pi / 180
         xSpeed = sin(angle) * speed
@@ -47,11 +52,7 @@ class Kilobot:
         return xSpeed, ySpeed
 
     def rotateKilobot(self, spinAngle):
-        if self.isStuck == 1:
-            self.fi = self.fi + 4
-        else:
-            self.fi = self.fi + spinAngle
-
+        self.fi = self.fi + spinAngle
 
     def checkSingleCollisionPrediction(self, self_X, self_Y, X, Y, promien):
         xSpeed, ySpeed = self.calculateSpeedXY(1)
@@ -63,9 +64,37 @@ class Kilobot:
             self.isStuck = 1
             return True
 
+    def checkRotatonCollisionPrediction(self, X, Y, promien, speed, fi_temp):
+        fi_temp = self.fi + fi_temp
+        angle = fi_temp * pi / 180
+        xSpeed = sin(angle) * speed
+        ySpeed = cos(angle) * speed
+        x_temp = self.x + xSpeed
+        y_temp = self.y + ySpeed
+        xDif = fabs(x_temp - X)
+        yDif = fabs(y_temp - Y)
+        Dif = sqrt(xDif ** 2 + yDif ** 2)
+        self.isStuck = 0
+        if Dif.real < 2 * promien + 1:
+            self.isStuck = 1
+            return True
+
     def checkWallCollisionPrediction(self, self_X, self_Y, resx, resy, promien):
         self.isStuck = 0
         if (self_X < promien + 1) | (self_Y < promien + 1) | (self_X > (resx - promien + 1)) | (
                 self_Y > (resy - promien - 55 + 1)):
+            self.isStuck = 1
+            return True
+
+    def checkRotatonWallCollisionPrediction(self, resx, resy, promien, speed, fi_temp):
+        fi_temp = self.fi + fi_temp
+        angle = fi_temp * pi / 180
+        xSpeed = sin(angle) * speed
+        ySpeed = cos(angle) * speed
+        x_temp = self.x + xSpeed
+        y_temp = self.y + ySpeed
+        self.isStuck = 0
+        if (x_temp < promien + 1) | (y_temp < promien + 1) | (x_temp > (resx - promien + 1)) | (
+                y_temp > (resy - promien - 55 + 1)):
             self.isStuck = 1
             return True
