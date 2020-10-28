@@ -12,10 +12,6 @@ resx = 600
 resy = 655
 
 
-# rysowanie kółek
-def drawCircle(pos, r, g, b, promien):
-    pygame.draw.circle(screen, (r, g, b), (int(pos[0]), int(pos[1])), promien)
-
 
 def checkPlacementCollision(array, X, Y):
     for itr in array:
@@ -51,6 +47,22 @@ def checkCollisionLoop(kilobot, kilobots_array_temp, x_temp, y_temp, resx, resy)
             return True
 
 
+def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
+    if enableTag:
+        for it in kilobotsArray:
+            forward = 1
+            rotation = 0
+            if getRandBool():
+                rotation = getRandSpin()
+
+            if not checkCollisionLoop(it, kilobotsArray, forward, rotation, resx, resy):
+                it.moveKilobot(forward)
+            else:
+                it.isStuck = 1
+            it.drawKilobot(screen, promienInput)
+            it.rotateKilobot(5 * rotation)
+
+
 # get random int number between -1 and 1
 def getRandSpin():
     return random2.randint(-1, 1)
@@ -64,7 +76,6 @@ def reddrawWindow():
     screen.fill((255, 255, 255))
 
 
-
 # tworzenie ekranu
 screen = pygame.display.set_mode((resx, resy))
 
@@ -75,11 +86,81 @@ kilobotID = 0;
 kilobotsNumber = 0;
 enable = False;
 
+
+def addKilobotEvent(pos):
+    global kilobotID, kilobotsNumber
+    print("Left mouse click at: " + str(pos[0]) + ", " + str(pos[1]))
+    if (pos[0] > promienInput) & (pos[1] > promienInput) & (pos[0] < (resx - promienInput)) & (
+            pos[1] < (resy - promienInput - 55)):
+        if not checkPlacementCollision(kilobots, pos[0], pos[1]):
+            kilobots.append(kilobotClass.Kilobot(kilobotID, pos[0], pos[1], 255, 0, 0))
+            print("Drew kilobot " + str(kilobotID) + " in x: " + str(pos[0]) + " y: " + str(pos[1]))
+            kilobotID = kilobotID + 1
+            kilobotsNumber = kilobotsNumber + 1
+
+def removeKilobotEvent(pos):
+    global kilobotsNumber, kilobotID
+    print("Right mouse click at: " + str(pos[0]) + ", " + str(pos[1]))
+    if checkPlacementCollisionAndTagForRemoval(kilobots, pos[0], pos[1]):
+        for x in range(len(kilobots)):
+            if kilobots[x].removed == 1:
+                print("Removed kilobot " + str(kilobotID) + " in x: " + str(kilobots[x].x) + " y: " + str(
+                    kilobots[x].y))
+                kilobots.pop(x)
+                kilobotsNumber = kilobotsNumber - 1
+                break
+
+
+def resetEvent(pos):
+    global kilobotID, kilobotsNumber, enable, resetButton
+    if resetButton.isOver(pos):
+        print('clicked reset button')
+        kilobots.clear()
+        kilobotID = 0
+        kilobotsNumber = 0
+        enable = False
+
+
+def startEvent(pos):
+    global enable
+    if startButton.isOver(pos):
+        print('Clicked start button')
+        enable = True
+
+
+def pauseEvent(pos):
+    global enable
+    if pauseButton.isOver(pos):
+        print('Clicked start button')
+        enable = False
+
+def inputEventHandler():
+    global running
+    for event in pygame.event.get():
+
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mousepos = pygame.mouse.get_pos()
+            if event.button == 1:
+                addKilobotEvent(mousepos)
+
+                resetEvent(mousepos)
+
+                startEvent(mousepos)
+
+                pauseEvent(mousepos)
+
+            if event.button == 3:
+                removeKilobotEvent()
+
+
 # tworzenie przycisku reset
 resetButton = button((255, 0, 0), resx - 100, resy - 50, 100, 50, 'Reset', True)
-startButton = button((0, 255, 0), 0, resy - 50, 100, 50, 'Start',  True)
-pauseButton = button((0, 0, 255), resx / 2 - 50, resy - 50, 100, 50, 'Pause',  True)
-numberView = button((255, 255, 255), resx / 2 - 50, 50, 100, 50, str(kilobotsNumber),  False)
+startButton = button((0, 255, 0), 0, resy - 50, 100, 50, 'Start', True)
+pauseButton = button((0, 0, 255), resx / 2 - 50, resy - 50, 100, 50, 'Pause', True)
+numberView = button((255, 255, 255), resx / 2 - 50, 50, 100, 50, str(kilobotsNumber), False)
 
 # glowna pętla
 running = True
@@ -87,67 +168,10 @@ while running:
 
     screen.fill((255, 255, 255))
     # random movement
-    if enable:
-        for it in kilobots:
-            forward = 1
-            rotation = 0
-            if getRandBool():
-                rotation = getRandSpin()
+    kilobotsMovement(enable, kilobots, resx, resy)
+    kilobotClass.drawKilobots(kilobots, screen, promienInput)
 
-            if not checkCollisionLoop(it, kilobots, forward, rotation, resx, resy):
-                it.moveKilobot(forward)
-            else:
-                it.isStuck = 1
-            it.drawKilobot(screen, promienInput)
-            it.rotateKilobot(5 * rotation)
-
-    for it in kilobots:
-        position = (it.x, it.y)
-        drawCircle(position, it.r, it.g, it.b, promienInput)
-
-    for event in pygame.event.get():
-
-        if event.type == pygame.QUIT:
-            running = False
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pos = pygame.mouse.get_pos()
-            mPosX, mPosY = pygame.mouse.get_pos()
-            if event.button == 1:
-                print("Left mouse click at: " + str(mPosX) + ", " + str(mPosY))
-                if (mPosX > promienInput) & (mPosY > promienInput) & (mPosX < (resx - promienInput)) & (
-                        mPosY < (resy - promienInput - 55)):
-                    if not checkPlacementCollision(kilobots, mPosX, mPosY):
-                        kilobots.append(kilobotClass.Kilobot(kilobotID, mPosX, mPosY, 255, 0, 0))
-                        print("Drew kilobot " + str(kilobotID) + " in x: " + str(mPosX) + " y: " + str(mPosY))
-                        kilobotID = kilobotID + 1
-                        kilobotsNumber = kilobotsNumber + 1
-
-                if resetButton.isOver(pos):
-                    print('clicked reset button')
-                    kilobots.clear()
-                    kilobotID = 0
-                    kilobotsNumber = 0
-                    enable = False
-
-                if startButton.isOver(pos):
-                    print('Clicked start button')
-                    enable = True
-
-                if pauseButton.isOver(pos):
-                    print('Clicked start button')
-                    enable = False
-
-            if event.button == 3:
-                print("Right mouse click at: " + str(mPosX) + ", " + str(mPosY))
-                if checkPlacementCollisionAndTagForRemoval(kilobots, mPosX, mPosY):
-                    for x in range(len(kilobots)):
-                        if kilobots[x].removed == 1:
-                            print("Removed kilobot " + str(kilobotID) + " in x: " + str(kilobots[x].x) + " y: " + str(
-                                kilobots[x].y))
-                            kilobots.pop(x)
-                            kilobotsNumber = kilobotsNumber - 1
-                            break
+    inputEventHandler()
 
     numberView.text = str(kilobotsNumber)
     resetButton.draw(screen)
