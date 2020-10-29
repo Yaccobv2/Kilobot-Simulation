@@ -40,7 +40,7 @@ class Kilobot:
         self.x = self.x + xSpeed
         self.y = self.y + ySpeed
 
-    def move(self, x,y):
+    def simple_move(self, x,y):
 
         self.x = self.x + x
         self.y = self.y + y
@@ -54,6 +54,7 @@ class Kilobot:
     def rotateKilobot(self, spinAngle):
         self.fi = self.fi + spinAngle
 
+    # predict collison between two kilobots for simple movement
     def checkSingleCollisionPrediction(self, self_X, self_Y, X, Y, promien):
         xSpeed, ySpeed = self.calculateSpeedXY(1)
         xDif = fabs(self_X - X)
@@ -64,7 +65,16 @@ class Kilobot:
             self.isStuck = 1
             return True
 
-    def checkRotatonCollisionPrediction(self, X, Y, promien, speed, fi_temp):
+    # predict collison between kilobot and borders for simple movement
+    def checkWallCollisionPrediction(self, self_X, self_Y, resx, resy, promien):
+        self.isStuck = 0
+        if (self_X < promien + 1) | (self_Y < promien + 1) | (self_X > (resx - promien + 1)) | (
+                self_Y > (resy - promien - 55 + 1)):
+            self.isStuck = 1
+            return True
+
+    # predict collison between two kilobots for rotation movement
+    def checkCollisionPrediction_Rotaton(self, X, Y, promien, speed, fi_temp):
         fi_temp = self.fi + fi_temp
         angle = fi_temp * pi / 180
         xSpeed = sin(angle) * speed
@@ -79,14 +89,8 @@ class Kilobot:
             self.isStuck = 1
             return True
 
-    def checkWallCollisionPrediction(self, self_X, self_Y, resx, resy, promien):
-        self.isStuck = 0
-        if (self_X < promien + 1) | (self_Y < promien + 1) | (self_X > (resx - promien + 1)) | (
-                self_Y > (resy - promien - 55 + 1)):
-            self.isStuck = 1
-            return True
-
-    def checkRotatonWallCollisionPrediction(self, resx, resy, promien, speed, fi_temp):
+    # predict collison between kilobot and borders for rotation movement
+    def checkWallCollisionPrediction_Rotaton(self, resx, resy, promien, speed, fi_temp):
         fi_temp = self.fi + fi_temp
         angle = fi_temp * pi / 180
         xSpeed = sin(angle) * speed

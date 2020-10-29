@@ -33,7 +33,7 @@ def checkPlacementCollisionAndTagForRemoval(array, X, Y):
     return False
 
 
-# check collison between the kilobot and array of kilobots
+# check collison between the kilobot and array of kilobots/borders for simple movement
 def checkCollisionLoop(kilobot, kilobots_array_temp, x_temp, y_temp, resx, resy):
     for it in kilobots_array_temp:
         if kilobot == it:
@@ -45,31 +45,19 @@ def checkCollisionLoop(kilobot, kilobots_array_temp, x_temp, y_temp, resx, resy)
         print("Kilobot " + str(kilobot.id) + " collided with a wall")
         return True
 
-
-def checkCollisionLoopTEST(kilobot, kilobots_array_temp, resx, resy, forward, fi_temp):
+# check collison between the kilobot and array of kilobots/borders for rotation movement
+def checkCollisionLoop_Rotate(kilobot, kilobots_array_temp, resx, resy, forward, fi_temp):
     for it in kilobots_array_temp:
         if kilobot == it:
             continue
-        if kilobot.checkRotatonCollisionPrediction(it.x, it.y, promienInput, forward, fi_temp):
+        if kilobot.checkCollisionPrediction_Rotaton(it.x, it.y, promienInput, forward, fi_temp):
             print("Kilobot " + str(it.id) + " collided with a different robot")
             return True
-    if kilobot.checkRotatonWallCollisionPrediction(resx, resy, promienInput, forward, fi_temp):
+    if kilobot.checkWallCollisionPrediction_Rotaton(resx, resy, promienInput, forward, fi_temp):
         print("Kilobot " + str(kilobot.id) + " collided with a wall")
         return True
 
-
-def checkCollisionRotateLoop(kilobot, kilobots_array_temp, resx, resy, forward, fi_temp):
-    for it in kilobots_array_temp:
-        if kilobot == it:
-            continue
-        if kilobot.checkRotatonCollisionPrediction(it.x, it.y, promienInput, forward, fi_temp):
-            print(" error1")
-            return True
-    if kilobot.checkRotatonWallCollisionPrediction(resx, resy, promienInput, forward, fi_temp):
-        print("error2")
-        return True
-
-
+# kilobots movement main loop
 def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
     if enableTag:
         for it in kilobotsArray:
@@ -79,16 +67,16 @@ def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
             if getRandBool():
                 rotation = getRandSpin()
 
-            if not checkCollisionLoopTEST(it, kilobotsArray, resx, resy, forward,
+            if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, forward,
                                                 5 * rotation):
                 it.moveKilobot(forward)
                 it.rotateKilobot(5 * rotation)
-                if not checkCollisionRotateLoop(it, kilobotsArray, resx, resy, move,
+                if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, move,
                                                 5 * rotation):
                     it.rotateKilobot(5 * rotation)
 
             else:
-                if not checkCollisionLoopTEST(it, kilobotsArray, resx, resy, -forward,
+                if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, -forward,
                                                 5 * rotation):
                     it.isStuck = 1
                     it.moveKilobot(-forward)
