@@ -34,7 +34,7 @@ def checkPlacementCollisionAndTagForRemoval(array, X, Y):
 
 
 # check collison between the kilobot and array of kilobots/borders for simple movement
-def checkCollisionLoop(kilobot, kilobots_array_temp, x_temp, y_temp, resx, resy):
+def checkCollisionLoop(kilobot, kilobots_array_temp, resx, resy, x_temp, y_temp, ):
     for it in kilobots_array_temp:
         if kilobot == it:
             continue
@@ -44,6 +44,20 @@ def checkCollisionLoop(kilobot, kilobots_array_temp, x_temp, y_temp, resx, resy)
     if kilobot.checkWallCollisionPrediction(kilobot.x + x_temp, kilobot.y + y_temp, resx, resy, promienInput):
         print("Kilobot " + str(kilobot.id) + " collided with a wall")
         return True
+
+
+# check collison between the kilobot and array of kilobots/borders for teleport
+def checkCollisionLoop_tp(kilobot, kilobots_array_temp, resx, resy, x_tp, y_tp, ):
+    for it in kilobots_array_temp:
+        if kilobot == it:
+            continue
+        if kilobot.checkSingleCollisionPrediction(x_tp, y_tp, it.x, it.y, promienInput):
+            print("Kilobot " + str(it.id) + " collided with a different robot")
+            return True
+    if kilobot.checkWallCollisionPrediction(x_tp, y_tp, resx, resy, promienInput):
+        print("Kilobot " + str(kilobot.id) + " collided with a wall")
+        return True
+
 
 # check collison between the kilobot and array of kilobots/borders for rotation movement
 def checkCollisionLoop_Rotate(kilobot, kilobots_array_temp, resx, resy, forward, fi_temp):
@@ -57,6 +71,7 @@ def checkCollisionLoop_Rotate(kilobot, kilobots_array_temp, resx, resy, forward,
         print("Kilobot " + str(kilobot.id) + " collided with a wall")
         return True
 
+
 # kilobots movement main loop
 def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
     if enableTag:
@@ -68,25 +83,49 @@ def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
                 rotation = getRandSpin()
 
             if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, forward,
-                                                5 * rotation):
+                                             5 * rotation):
                 it.moveKilobot(forward)
-                it.rotateKilobot(5 * rotation)
-                if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, move,
-                                                5 * rotation):
-                    it.rotateKilobot(5 * rotation)
+                it.rotateKilobot(10 * move)
+
+                it.isStuck -= 1
+                if it.isStuck == 0:
+                    it.changeColor(124, 252, 0)
+
+                # if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, move,
+                #                 #                                  5 * rotation):
+                #                 #     it.rotateKilobot(5 * move)
+                #                 #
+                #                 #     it.isStuck -= 1
+                #                 #     if it.isStuck== 0:
+                #                 #         it.changeColor(124, 252, 0)
 
             else:
-                if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, -forward,
-                                                5 * rotation):
-                    it.isStuck = 1
-                    it.moveKilobot(-forward)
+                for i in range(0, 2):
+                    if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, -forward,
+                                                     0):
+                        it.moveKilobot(-forward)
 
+                        it.changeColor(255, 0, 0)
+                        it.isStuck = 10
+
+                    else:
+                        it.isStuck += 1
+                        if it.isStuck == 1000 and not checkCollisionLoop_tp(it, kilobotsArray, resx, resy, resx / 2,
+                                                                            resy / 2):
+                            it.setPositon(resx / 2, resy / 2)
+                            it.isStuck = 0
+                            it.changeColor(124, 252, 0)
             it.drawKilobot(screen, promienInput)
 
 
 # get random int number between -1 and 1
 def getRandSpin():
     return random2.randint(-1, 1)
+
+
+# get random int number between 0 and 255
+def getRandColor():
+    return random2.randint(0, 255)
 
 
 def getRandBool():
@@ -114,7 +153,7 @@ def addKilobotEvent(pos):
     if (pos[0] > promienInput) & (pos[1] > promienInput) & (pos[0] < (resx - promienInput)) & (
             pos[1] < (resy - promienInput - 55)):
         if not checkPlacementCollision(kilobots, pos[0], pos[1]):
-            kilobots.append(kilobotClass.Kilobot(kilobotID, pos[0], pos[1], 255, 0, 0))
+            kilobots.append(kilobotClass.Kilobot(kilobotID, pos[0], pos[1],0, 124, 252, 0))
             print("Drew kilobot " + str(kilobotID) + " in x: " + str(pos[0]) + " y: " + str(pos[1]))
             kilobotID = kilobotID + 1
             kilobotsNumber = kilobotsNumber + 1
