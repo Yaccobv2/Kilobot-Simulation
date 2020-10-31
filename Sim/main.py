@@ -1,8 +1,10 @@
 from math import fabs, sqrt
 import random2
 import pygame
-import kilobotClass
+
 from button import button
+import kilobotClass
+from timer import Timer
 
 # inicjalizacja biblioteki
 pygame.init()
@@ -78,28 +80,19 @@ def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
         for it in kilobotsArray:
             forward = 1
             move = getRandSpin()
-            rotation = 0
-            if getRandBool():
-                rotation = getRandSpin()
 
             if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, forward,
-                                             5 * rotation):
+                                             5 * move):
                 it.moveKilobot(forward)
-                it.rotateKilobot(10 * move)
+                it.rotateKilobot(5 * move)
+
 
                 it.isStuck -= 1
                 if it.isStuck == 0:
                     it.changeColor(124, 252, 0)
 
-                # if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, move,
-                #                 #                                  5 * rotation):
-                #                 #     it.rotateKilobot(5 * move)
-                #                 #
-                #                 #     it.isStuck -= 1
-                #                 #     if it.isStuck== 0:
-                #                 #         it.changeColor(124, 252, 0)
-
             else:
+                "stuck move backward handler"
                 for i in range(0, 2):
                     if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, -forward,
                                                      0):
@@ -107,8 +100,8 @@ def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
 
                         it.changeColor(255, 0, 0)
                         it.isStuck = 10
-
                     else:
+                        "permanent stuck error handler"
                         it.isStuck += 1
                         if it.isStuck == 1000 and not checkCollisionLoop_tp(it, kilobotsArray, resx, resy, resx / 2,
                                                                             resy / 2):
@@ -140,11 +133,13 @@ def reddrawWindow():
 screen = pygame.display.set_mode((resx, resy))
 
 # deklaracja tablicy kilobotow
-kilobotsMaxAmount = 100;
+kilobotsMaxAmount = 100
 kilobots = []
-kilobotID = 0;
-kilobotsNumber = 0;
-enable = False;
+kilobotID = 0
+kilobotsNumber = 0
+startTime = 0
+enable = False
+pause = False
 
 
 def addKilobotEvent(pos):
@@ -153,7 +148,7 @@ def addKilobotEvent(pos):
     if (pos[0] > promienInput) & (pos[1] > promienInput) & (pos[0] < (resx - promienInput)) & (
             pos[1] < (resy - promienInput - 55)):
         if not checkPlacementCollision(kilobots, pos[0], pos[1]):
-            kilobots.append(kilobotClass.Kilobot(kilobotID, pos[0], pos[1],0, 124, 252, 0))
+            kilobots.append(kilobotClass.Kilobot(kilobotID, pos[0], pos[1], 0, 124, 252, 0))
             print("Drew kilobot " + str(kilobotID) + " in x: " + str(pos[0]) + " y: " + str(pos[1]))
             kilobotID = kilobotID + 1
             kilobotsNumber = kilobotsNumber + 1
@@ -174,26 +169,54 @@ def removeKilobotEvent(pos):
 
 def resetEvent(pos):
     global kilobotID, kilobotsNumber, enable, resetButton
+    global pause
     if resetButton.isOver(pos):
         print('clicked reset button')
         kilobots.clear()
         kilobotID = 0
         kilobotsNumber = 0
+
+        t.stop()
+        if pause:
+            t_pause.stop()
+
         enable = False
+        pause = False
+
+
 
 
 def startEvent(pos):
     global enable
+    global pause
     if startButton.isOver(pos):
         print('Clicked start button')
+
+        if not pause:
+            t.start()
+        else:
+            t_pause.stop()
+
         enable = True
+        pause = False
 
 
 def pauseEvent(pos):
     global enable
+    global pause
     if pauseButton.isOver(pos):
         print('Clicked start button')
+
+        if not pause:
+            t_pause.start()
+
         enable = False
+        pause = True
+
+
+def pasueTimer(pause):
+    if pause:
+        t.pause(t_pause.read_time())
 
 
 def inputEventHandler():
@@ -219,25 +242,30 @@ def inputEventHandler():
 
 
 # tworzenie przycisku reset
-resetButton = button((255, 0, 0), resx - 100, resy - 50, 100, 50, 'Reset', True)
-startButton = button((0, 255, 0), 0, resy - 50, 100, 50, 'Start', True)
-pauseButton = button((0, 0, 255), resx / 2 - 50, resy - 50, 100, 50, 'Pause', True)
+resetButton = button((220, 220, 220), resx - 100, resy - 50, 100, 50, 'Reset', True)
+startButton = button((220, 220, 220), 0, resy - 50, 100, 50, 'Start', True)
+pauseButton = button((220, 220, 220), resx / 2 - 50, resy - 50, 100, 50, 'Pause', True)
 numberView = button((255, 255, 255), resx / 2 - 50, 50, 100, 50, str(kilobotsNumber), False)
+timeView = button((255, 255, 255), resx - 50, 0, 50, 50, str(startTime), False)
 
 # glowna pętla
 running = True
+t = Timer()
+t_pause = Timer()
 while running:
     screen.fill((255, 255, 255))
     # random movement
     kilobotsMovement(enable, kilobots, resx, resy)
     kilobotClass.drawKilobots(kilobots, screen, promienInput)
-
     inputEventHandler()
+    pasueTimer(pause)
 
     numberView.text = str(kilobotsNumber)
+    timeView.text = str(t.read_time())
     resetButton.draw(screen)
     startButton.draw(screen)
     pauseButton.draw(screen)
     numberView.draw(screen)
+    timeView.draw(screen)
 
     pygame.display.update()

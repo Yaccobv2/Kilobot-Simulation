@@ -51,7 +51,7 @@ class Kilobot:
         self.b = (255/7)*b
 
     def moveKilobot(self, speed):
-        angle = self.fi * pi / 180
+        angle = self.fi*pi/180
         xSpeed = sin(angle) * speed
         ySpeed = cos(angle) * speed
         self.x = self.x + xSpeed
@@ -88,8 +88,8 @@ class Kilobot:
 
     # predict collison between two kilobots for rotation movement
     def checkCollisionPrediction_Rotaton(self, X, Y, promien, speed, fi_temp):
-        fi_temp = self.fi + fi_temp
-        angle = fi_temp * pi / 180
+        fi_temp = self.fi+fi_temp
+        angle = fi_temp*pi/180
         xSpeed = sin(angle) * speed
         ySpeed = cos(angle) * speed
         x_temp = self.x + xSpeed
