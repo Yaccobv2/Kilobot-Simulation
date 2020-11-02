@@ -78,6 +78,17 @@ class Kilobot:
         self.x = self.x + xSpeed
         self.y = self.y + ySpeed
 
+    def rotateKilobot(self, spinAngle):
+        self.fi = self.fi + spinAngle
+
+    def MotorsMoveKilobot(self, M1, M2):
+        M_temp = M1 - M2
+        self.fi = self.fi + M_temp*0.001
+        xSpeed = sin(self.fi)
+        ySpeed = cos(self.fi)
+        self.x = self.x + xSpeed
+        self.y = self.y + ySpeed
+
     def simple_move(self, x, y):
 
         self.x = self.x + x
@@ -88,9 +99,6 @@ class Kilobot:
         xSpeed = sin(angle) * speed
         ySpeed = cos(angle) * speed
         return xSpeed, ySpeed
-
-    def rotateKilobot(self, spinAngle):
-        self.fi = self.fi + spinAngle
 
     # predict collison between two kilobots for simple movement
     def checkSingleCollisionPrediction(self, self_X, self_Y, X, Y):
@@ -127,6 +135,31 @@ class Kilobot:
         angle = fi_temp * pi / 180
         xSpeed = sin(angle) * speed
         ySpeed = cos(angle) * speed
+        x_temp = self.x + xSpeed
+        y_temp = self.y + ySpeed
+        if (x_temp < self.radius + 1) | (y_temp < self.radius + 1) | (x_temp > (resx - self.radius + 1)) | (
+                y_temp > (resy - self.radius - 55 + 1)):
+            return True
+
+
+ # predict collison between two kilobots for Motors movement
+    def checkCollisionPrediction_Motors(self, X, Y, fi_temp):
+        angle = fi_temp
+        xSpeed = sin(angle)
+        ySpeed = cos(angle)
+        x_temp = self.x + xSpeed
+        y_temp = self.y + ySpeed
+        xDif = fabs(x_temp - X)
+        yDif = fabs(y_temp - Y)
+        Dif = sqrt(xDif ** 2 + yDif ** 2)
+        if Dif.real < 2 * self.radius + 1:
+            return True
+
+    # predict collison between kilobot and borders for Motors movement
+    def checkWallCollisionPrediction_Motors(self, resx, resy, fi_temp):
+        angle = fi_temp
+        xSpeed = sin(angle)
+        ySpeed = cos(angle)
         x_temp = self.x + xSpeed
         y_temp = self.y + ySpeed
         if (x_temp < self.radius + 1) | (y_temp < self.radius + 1) | (x_temp > (resx - self.radius + 1)) | (

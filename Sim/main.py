@@ -61,12 +61,14 @@ def checkCollisionLoop_tp(kilobot, kilobots_array_temp, resx, resy, x_tp, y_tp):
 
         return True
 
+
 def isIdPresent(inID, IDIRArray):
     for itr in IDIRArray:
         if itr == inID:
             return True
     else:
         return False
+
 
 def detectKilobotsInIRRange(kilobotArray):
     for i1 in range(0, len(kilobotArray), 1):
@@ -78,7 +80,6 @@ def detectKilobotsInIRRange(kilobotArray):
                 if Dif.real < 2 * kilobotArray[i1].infraredRadius + 1:
                     if not isIdPresent(kilobotArray[i2].id, kilobotArray[i1].inIRRangeKilobotID):
                         kilobotArray[i1].inIRRangeKilobotID.append(kilobotArray[i2].id)
-
 
 
 # check collison between the kilobot and array of kilobots/borders for rotation movement
@@ -93,6 +94,18 @@ def checkCollisionLoop_Rotate(kilobot, kilobots_array_temp, resx, resy, forward,
         print("Kilobot " + str(kilobot.id) + " collided with a wall")
         return True
 
+# check collison between the kilobot and array of kilobots/borders for Motors movement
+def checkCollisionLoop_Motors(kilobot, kilobots_array_temp, resx, resy, fi_temp):
+    for it in kilobots_array_temp:
+        if kilobot == it:
+            continue
+        if kilobot.checkCollisionPrediction_Motors(it.x, it.y, fi_temp):
+            print("Kilobot " + str(it.id) + " collided with a different robot")
+            return True
+    if kilobot.checkWallCollisionPrediction_Motors(resx, resy, fi_temp):
+        print("Kilobot " + str(kilobot.id) + " collided with a wall")
+        return True
+
 
 # kilobots movement main loop
 def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
@@ -100,12 +113,15 @@ def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
         for it in kilobotsArray:
             forward = 1
             move = getRandSpin()
+            M1 = getRandColor()
+            M2 = getRandColor()
 
-            if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, forward,
-                                             5 * move):
-                it.moveKilobot(forward)
-                it.rotateKilobot(5 * move)
+            #if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, forward, 5 * move):
 
+            if not checkCollisionLoop_Motors(it, kilobotsArray, resx, resy, (M1-M2)*0.001):
+                #it.moveKilobot(forward)
+                #it.rotateKilobot(5 * move)
+                it.MotorsMoveKilobot(M1, M2)
 
                 it.isStuck -= 1
                 if it.isStuck == 0:
@@ -113,10 +129,10 @@ def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
 
             else:
                 "stuck move backward handler"
-                for i in range(0, 2):
-                    if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, -forward,
-                                                     0):
+                for i in range(0, 3):
+                    if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, -forward,0):
                         it.moveKilobot(-forward)
+                        #it.MotorsMoveKilobot(M1, M2)
 
                         it.changeColor(255, 0, 0)
                         it.isStuck = 10
@@ -202,8 +218,6 @@ def resetEvent(pos):
 
         enable = False
         pause = False
-
-
 
 
 def startEvent(pos):
