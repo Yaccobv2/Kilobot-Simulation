@@ -130,8 +130,11 @@ def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
             else:
                 "stuck move backward handler"
                 for i in range(0, 3):
-                    if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, -forward,0):
+                    if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, -forward,5*move):
+
+                        it.rotateKilobot(5 * move)
                         it.moveKilobot(-forward)
+
                         #it.MotorsMoveKilobot(M1, M2)
 
                         it.changeColor(255, 0, 0)

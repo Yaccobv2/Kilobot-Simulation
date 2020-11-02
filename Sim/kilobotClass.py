@@ -144,7 +144,7 @@ class Kilobot:
 
  # predict collison between two kilobots for Motors movement
     def checkCollisionPrediction_Motors(self, X, Y, fi_temp):
-        angle = fi_temp
+        angle = self.fi+fi_temp
         xSpeed = sin(angle)
         ySpeed = cos(angle)
         x_temp = self.x + xSpeed
@@ -157,7 +157,7 @@ class Kilobot:
 
     # predict collison between kilobot and borders for Motors movement
     def checkWallCollisionPrediction_Motors(self, resx, resy, fi_temp):
-        angle = fi_temp
+        angle = self.fi+fi_temp
         xSpeed = sin(angle)
         ySpeed = cos(angle)
         x_temp = self.x + xSpeed
