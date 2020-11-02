@@ -22,6 +22,13 @@ class Timer:
         self.pauseTime = 0
         self.elapsed_time = 0
 
+    def state(self):
+        """Chcek state"""
+        if self._start_time is not None:
+            return True
+        else:
+            return False
+
     def pause(self, pause_Timer):
         self.pauseTime = pause_Timer
 

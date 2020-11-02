@@ -175,7 +175,7 @@ kilobotID = 0
 kilobotsNumber = 0
 startTime = 0
 enable = False
-pause = False
+
 
 
 def addKilobotEvent(pos):
@@ -212,12 +212,14 @@ def resetEvent(pos):
         kilobotID = 0
         kilobotsNumber = 0
 
-        t.stop()
-        if pause:
+        if t.state():
+            t.stop()
+
+        if t_pause.state():
             t_pause.stop()
 
         enable = False
-        pause = False
+
 
 
 def startEvent(pos):
@@ -226,13 +228,13 @@ def startEvent(pos):
     if startButton.isOver(pos):
         print('Clicked start button')
 
-        if not pause:
+        if not t_pause.state():
             t.start()
         else:
             t_pause.stop()
 
         enable = True
-        pause = False
+
 
 
 def pauseEvent(pos):
@@ -241,15 +243,15 @@ def pauseEvent(pos):
     if pauseButton.isOver(pos):
         print('Clicked start button')
 
-        if not pause:
+        if not t_pause.state():
             t_pause.start()
 
         enable = False
-        pause = True
 
 
-def pasueTimer(pause):
-    if pause:
+
+def pasueTimer():
+    if t_pause.state():
         t.pause(t_pause.read_time())
 
 
@@ -302,7 +304,7 @@ while running:
         print(itr.inIRRangeKilobotID)
 
     inputEventHandler()
-    pasueTimer(pause)
+    pasueTimer()
 
     numberView.text = str(kilobotsNumber)
     timeView.text = str(t.read_time())
