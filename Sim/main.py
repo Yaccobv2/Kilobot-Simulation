@@ -5,10 +5,11 @@ import pygame
 from button import button
 import kilobotClass
 from timer import Timer
+import Movement
 
 # inicjalizacja biblioteki
 pygame.init()
-promienInput = 15
+radiusInput = 15
 
 resx = 600
 resy = 655
@@ -34,81 +35,45 @@ def checkPlacementCollisionAndTagForRemoval(array, X, Y):
             return True
     return False
 
-
-# check collison between the kilobot and array of kilobots/borders for simple movement
-def checkCollisionLoop(kilobot, kilobots_array_temp, resx, resy, x_temp, y_temp, ):
-    for it in kilobots_array_temp:
-        if kilobot == it:
-            continue
-        if kilobot.checkSingleCollisionPrediction(kilobot.x + x_temp, kilobot.y + y_temp, it.x, it.y, promienInput):
-            print("Kilobot " + str(it.id) + " collided with a different robot")
+def isIdPresent(inID, IDIRArray):
+    for itr in IDIRArray:
+        if itr == inID:
             return True
-    if kilobot.checkWallCollisionPrediction(kilobot.x + x_temp, kilobot.y + y_temp, resx, resy, promienInput):
-        print("Kilobot " + str(kilobot.id) + " collided with a wall")
-        return True
+    else:
+        return False
 
 
-# check collison between the kilobot and array of kilobots/borders for teleport
-def checkCollisionLoop_tp(kilobot, kilobots_array_temp, resx, resy, x_tp, y_tp, ):
-    for it in kilobots_array_temp:
-        if kilobot == it:
-            continue
-        if kilobot.checkSingleCollisionPrediction(x_tp, y_tp, it.x, it.y, promienInput):
-            print("Kilobot " + str(it.id) + " collided with a different robot")
-            return True
-    if kilobot.checkWallCollisionPrediction(x_tp, y_tp, resx, resy, promienInput):
-        print("Kilobot " + str(kilobot.id) + " collided with a wall")
-        return True
+# detect kilobots in range
+# def detectKilobotsInIRRange(kilobotArray):
+#     for i1 in kilobotArray:
+#         for i2 in kilobotArray:
+#             if not i1.id == i2.id:
+#                 xDif = fabs(i1.x - i2.x)
+#                 yDif = fabs(i1.y - i2.y)
+#                 Dif = sqrt(xDif ** 2 + yDif ** 2)
+#                 if Dif.real < 2 * i1.infraredRadius + 1:
+#                     if not isIdPresent(i2.id, i1.inIRRangeKilobotID):
+#                         i1.inIRRangeKilobotID.append(i2.id)
+
+# detect food in range
+def detectKilobotsInIRRange(kilobotArray, FoodArray):
+    for i1 in kilobotArray:
+        for i2 in FoodArray:
+            xDif = fabs(i1.x - i2.x)
+            yDif = fabs(i1.y - i2.y)
+            Dif = sqrt(xDif ** 2 + yDif ** 2)
+            if Dif.real < 2 * i1.infraredRadius + 1:
+                if not isIdPresent(i2.id, i1.inIRRangeKilobotID):
+                    IDandDistance = [i2.id, round(Dif.real, 2)]
+                    i1.inIRRangeKilobotID.append(IDandDistance)
 
 
-# check collison between the kilobot and array of kilobots/borders for rotation movement
-def checkCollisionLoop_Rotate(kilobot, kilobots_array_temp, resx, resy, forward, fi_temp):
-    for it in kilobots_array_temp:
-        if kilobot == it:
-            continue
-        if kilobot.checkCollisionPrediction_Rotaton(it.x, it.y, promienInput, forward, fi_temp):
-            print("Kilobot " + str(it.id) + " collided with a different robot")
-            return True
-    if kilobot.checkWallCollisionPrediction_Rotaton(resx, resy, promienInput, forward, fi_temp):
-        print("Kilobot " + str(kilobot.id) + " collided with a wall")
-        return True
+# copy range list to check if kilobot is getting closer
+def KilobotsInIRRange_last(kilobotArray):
+    for i1 in kilobotArray:
+        i1.ID_last = i1.inIRRangeKilobotID.copy()
 
 
-# kilobots movement main loop
-def kilobotsMovement(enableTag, kilobotsArray, resx, resy):
-    if enableTag:
-        for it in kilobotsArray:
-            forward = 1
-            move = getRandSpin()
-
-            if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, forward,
-                                             5 * move):
-                it.moveKilobot(forward)
-                it.rotateKilobot(5 * move)
-
-
-                it.isStuck -= 1
-                if it.isStuck == 0:
-                    it.changeColor(124, 252, 0)
-
-            else:
-                "stuck move backward handler"
-                for i in range(0, 2):
-                    if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, -forward,
-                                                     0):
-                        it.moveKilobot(-forward)
-
-                        it.changeColor(255, 0, 0)
-                        it.isStuck = 10
-                    else:
-                        "permanent stuck error handler"
-                        it.isStuck += 1
-                        if it.isStuck == 1000 and not checkCollisionLoop_tp(it, kilobotsArray, resx, resy, resx / 2,
-                                                                            resy / 2):
-                            it.setPositon(resx / 2, resy / 2)
-                            it.isStuck = 0
-                            it.changeColor(124, 252, 0)
-            it.drawKilobot(screen, promienInput)
 
 
 # get random int number between -1 and 1
@@ -137,18 +102,19 @@ kilobotsMaxAmount = 100
 kilobots = []
 kilobotID = 0
 kilobotsNumber = 0
+SpecialkilobotID, SpecialkilobotsNumber = 0, 0
 startTime = 0
 enable = False
-pause = False
+Specialkolobot = []
 
 
 def addKilobotEvent(pos):
     global kilobotID, kilobotsNumber
     print("Left mouse click at: " + str(pos[0]) + ", " + str(pos[1]))
-    if (pos[0] > promienInput) & (pos[1] > promienInput) & (pos[0] < (resx - promienInput)) & (
-            pos[1] < (resy - promienInput - 55)):
+    if (pos[0] > radiusInput) & (pos[1] > radiusInput) & (pos[0] < (resx - radiusInput)) & (
+            pos[1] < (resy - radiusInput - 55)):
         if not checkPlacementCollision(kilobots, pos[0], pos[1]):
-            kilobots.append(kilobotClass.Kilobot(kilobotID, pos[0], pos[1], 0, 124, 252, 0))
+            kilobots.append(kilobotClass.Kilobot(kilobotID, pos[0], pos[1], 0, 124, 252, 0, radiusInput))
             print("Drew kilobot " + str(kilobotID) + " in x: " + str(pos[0]) + " y: " + str(pos[1]))
             kilobotID = kilobotID + 1
             kilobotsNumber = kilobotsNumber + 1
@@ -167,23 +133,37 @@ def removeKilobotEvent(pos):
                 break
 
 
+def addSpecialKilobotEvent(pos):
+    global SpecialkilobotID, SpecialkilobotsNumber
+    print("Left mouse click at: " + str(pos[0]) + ", " + str(pos[1]))
+    if (pos[0] > radiusInput) & (pos[1] > radiusInput) & (pos[0] < (resx - radiusInput)) & (
+            pos[1] < (resy - radiusInput - 55)):
+        if not checkPlacementCollision(Specialkolobot, pos[0], pos[1]):
+            Specialkolobot.append(kilobotClass.Kilobot(SpecialkilobotID, pos[0], pos[1], 0, 0, 128, 0, radiusInput))
+            print("Drew kilobot " + str(SpecialkilobotID) + " in x: " + str(pos[0]) + " y: " + str(pos[1]))
+            SpecialkilobotID = SpecialkilobotID + 1
+            SpecialkilobotsNumber = SpecialkilobotsNumber + 1
+
+
 def resetEvent(pos):
-    global kilobotID, kilobotsNumber, enable, resetButton
+    global kilobotID, kilobotsNumber, enable, resetButton, SpecialkilobotID, SpecialkilobotsNumber
     global pause
     if resetButton.isOver(pos):
         print('clicked reset button')
         kilobots.clear()
+        Specialkolobot.clear()
         kilobotID = 0
         kilobotsNumber = 0
+        SpecialkilobotID = 0
+        SpecialkilobotsNumber = 0
 
-        t.stop()
-        if pause:
+        if t.state():
+            t.stop()
+
+        if t_pause.state():
             t_pause.stop()
 
         enable = False
-        pause = False
-
-
 
 
 def startEvent(pos):
@@ -192,13 +172,13 @@ def startEvent(pos):
     if startButton.isOver(pos):
         print('Clicked start button')
 
-        if not pause:
+        if not t_pause.state() and not t.state():
             t.start()
         else:
-            t_pause.stop()
+            if t_pause.state():
+                t_pause.stop()
 
         enable = True
-        pause = False
 
 
 def pauseEvent(pos):
@@ -207,15 +187,14 @@ def pauseEvent(pos):
     if pauseButton.isOver(pos):
         print('Clicked start button')
 
-        if not pause:
+        if not t_pause.state():
             t_pause.start()
 
         enable = False
-        pause = True
 
 
-def pasueTimer(pause):
-    if pause:
+def pasueTimer():
+    if t_pause.state():
         t.pause(t_pause.read_time())
 
 
@@ -227,8 +206,8 @@ def inputEventHandler():
             running = False
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            mousepos = pygame.mouse.get_pos()
             if event.button == 1:
+                mousepos = pygame.mouse.get_pos()
                 addKilobotEvent(mousepos)
 
                 resetEvent(mousepos)
@@ -238,7 +217,14 @@ def inputEventHandler():
                 pauseEvent(mousepos)
 
             if event.button == 3:
-                removeKilobotEvent()
+                mousepos = pygame.mouse.get_pos()
+                removeKilobotEvent(mousepos)
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                mousepos = pygame.mouse.get_pos()
+                addSpecialKilobotEvent(mousepos)
+                print("dik")
 
 
 # tworzenie przycisku reset
@@ -255,10 +241,22 @@ t_pause = Timer()
 while running:
     screen.fill((255, 255, 255))
     # random movement
-    kilobotsMovement(enable, kilobots, resx, resy)
-    kilobotClass.drawKilobots(kilobots, screen, promienInput)
     inputEventHandler()
-    pasueTimer(pause)
+
+    # update list of food in range
+    for itr in kilobots:
+        itr.inIRRangeKilobotID.clear()
+    detectKilobotsInIRRange(kilobots, Specialkolobot)
+    for itr in kilobots:
+        print(str(itr.id) + ":" + str(itr.inIRRangeKilobotID))
+
+    Movement.kilobotsMovement(enable, kilobots, resx, resy,screen)
+
+    KilobotsInIRRange_last(kilobots)
+    kilobotClass.drawKilobots(kilobots, screen)
+    kilobotClass.drawKilobots(Specialkolobot, screen)
+
+    pasueTimer()
 
     numberView.text = str(kilobotsNumber)
     timeView.text = str(t.read_time())
