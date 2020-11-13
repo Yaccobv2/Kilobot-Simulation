@@ -43,20 +43,20 @@ def isIdPresent(inID, IDIRArray):
         return False
 
 
-# detect kilobots in range
-# def detectKilobotsInIRRange(kilobotArray):
-#     for i1 in kilobotArray:
-#         for i2 in kilobotArray:
-#             if not i1.id == i2.id:
-#                 xDif = fabs(i1.x - i2.x)
-#                 yDif = fabs(i1.y - i2.y)
-#                 Dif = sqrt(xDif ** 2 + yDif ** 2)
-#                 if Dif.real < 2 * i1.infraredRadius + 1:
-#                     if not isIdPresent(i2.id, i1.inIRRangeKilobotID):
-#                         i1.inIRRangeKilobotID.append(i2.id)
+#detect kilobots in range
+def detectKilobotsInIRRange(kilobotArray):
+    for i1 in kilobotArray:
+        for i2 in kilobotArray:
+            if not i1.id == i2.id:
+                xDif = fabs(i1.x - i2.x)
+                yDif = fabs(i1.y - i2.y)
+                Dif = sqrt(xDif ** 2 + yDif ** 2)
+                if Dif.real < 2 * i1.infraredRadius + 1:
+                    if not isIdPresent(i2.id, i1.inIRRangeKilobotID):
+                        i1.inIRRangeKilobotID.append(i2.id)
 
 # detect food in range
-def detectKilobotsInIRRange(kilobotArray, FoodArray):
+def detectFoodsInIRRange(kilobotArray, FoodArray):
     for i1 in kilobotArray:
         for i2 in FoodArray:
             xDif = fabs(i1.x - i2.x)
@@ -246,13 +246,18 @@ while running:
     # update list of food in range
     for itr in kilobots:
         itr.inIRRangeKilobotID.clear()
-    detectKilobotsInIRRange(kilobots, Specialkolobot)
+
+    #to run finding food uncomment detectFoodsInIRRange, KilobotsInIRRange_last and comment detectKilobotsInIRRange
+    #detectFoodsInIRRange(kilobots, Specialkolobot)
+    detectKilobotsInIRRange(kilobots)
+
+
     for itr in kilobots:
         print(str(itr.id) + ":" + str(itr.inIRRangeKilobotID))
 
     Movement.kilobotsMovement(enable, kilobots, resx, resy,screen)
 
-    KilobotsInIRRange_last(kilobots)
+    #KilobotsInIRRange_last(kilobots)
     kilobotClass.drawKilobots(kilobots, screen)
     kilobotClass.drawKilobots(Specialkolobot, screen)
 

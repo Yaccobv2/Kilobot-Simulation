@@ -122,7 +122,6 @@ def kilobotsMovement(enableTag, kilobotsArray, resx, resy, screen):
             move = getRandSpin()
             M1 = 255
             M2 = 255
-            print("closest food:" + str(closestFood))
             # if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, forward, 5 * move):
             if closestFood is not ValueError and len(it.inIRRangeKilobotID) == len(it.ID_last):
                 if len(it.ID_last) > 0:
