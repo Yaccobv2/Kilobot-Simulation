@@ -1,5 +1,6 @@
 from cmath import sqrt
 from math import fabs, pi, sin, cos
+import itertools
 
 import pygame
 
@@ -39,19 +40,9 @@ class Kilobot:
     fi = 0
     removed = 0
     isStuck = 0
-    infraredRadius = 50
+    infraredRadius = 200
     radius = 0
-
-    def detectKilobotsInIRRange(self, kilobotArray):
-        for botItr in kilobotArray:
-            xDif = fabs(self.x - botItr.x)
-            yDif = fabs(self.y - botItr.y)
-            Dif = sqrt(xDif ** 2 + yDif ** 2)
-            if botItr.id == self.id:
-                continue
-            elif Dif.real < 2 * self.infraredRadius + 1:
-                if not isIdPresent(botItr.id, self.inIRRangeKilobotID):
-                    self.inIRRangeKilobotID.append(botItr.id)
+    ID_last = []
 
     def drawKilobot(self, screen):
         pygame.draw.circle(screen, (self.r, self.g, self.b), (int(self.x), int(self.y)), self.radius)
@@ -83,7 +74,7 @@ class Kilobot:
 
     def MotorsMoveKilobot(self, M1, M2):
         M_temp = M1 - M2
-        self.fi = self.fi + M_temp*0.001
+        self.fi = self.fi + M_temp * 0.001
         xSpeed = sin(self.fi)
         ySpeed = cos(self.fi)
         self.x = self.x + xSpeed
@@ -141,10 +132,9 @@ class Kilobot:
                 y_temp > (resy - self.radius - 55 + 1)):
             return True
 
-
- # predict collison between two kilobots for Motors movement
+    # predict collison between two kilobots for Motors movement
     def checkCollisionPrediction_Motors(self, X, Y, fi_temp):
-        angle = self.fi+fi_temp
+        angle = self.fi + fi_temp
         xSpeed = sin(angle)
         ySpeed = cos(angle)
         x_temp = self.x + xSpeed
@@ -157,7 +147,7 @@ class Kilobot:
 
     # predict collison between kilobot and borders for Motors movement
     def checkWallCollisionPrediction_Motors(self, resx, resy, fi_temp):
-        angle = self.fi+fi_temp
+        angle = self.fi + fi_temp
         xSpeed = sin(angle)
         ySpeed = cos(angle)
         x_temp = self.x + xSpeed
@@ -165,3 +155,27 @@ class Kilobot:
         if (x_temp < self.radius + 1) | (y_temp < self.radius + 1) | (x_temp > (resx - self.radius + 1)) | (
                 y_temp > (resy - self.radius - 55 + 1)):
             return True
+
+    def detectKilobotsInIRRange(self, kilobotArray):
+        for botItr in kilobotArray:
+            xDif = fabs(self.x - botItr.x)
+            yDif = fabs(self.y - botItr.y)
+            Dif = sqrt(xDif ** 2 + yDif ** 2)
+            if botItr.id == self.id:
+                continue
+            elif Dif.real < 2 * self.infraredRadius + 1:
+                if not isIdPresent(botItr.id, self.inIRRangeKilobotID):
+                    self.inIRRangeKilobotID.append(botItr.id)
+
+    def findClosestFood(self):
+        if len(self.ID_last) != 0:
+            closest = self.ID_last[0][1]
+            closest_id = 0
+
+            for food in range(0, len(self.ID_last)):
+                if self.ID_last[food][1] < closest:
+                    closest = self.ID_last[food][1]
+                    closest_id = food
+            return closest_id
+        else:
+            return ValueError
