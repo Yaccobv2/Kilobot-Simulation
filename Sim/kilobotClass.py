@@ -1,6 +1,5 @@
 from cmath import sqrt
 from math import fabs, pi, sin, cos
-import itertools
 
 import pygame
 
@@ -8,14 +7,6 @@ import pygame
 def drawKilobots(kilobotArray, screen):
     for it in kilobotArray:
         it.drawKilobot(screen)
-
-
-def isIdPresent(inID, IDIRArray):
-    for itr in IDIRArray:
-        if itr == inID:
-            return True
-    else:
-        return False
 
 
 class Kilobot:
@@ -30,19 +21,14 @@ class Kilobot:
         self.fi = fi
         self.radius = radius
         self.inIRRangeKilobotID = []
+        self.inIRRangeFoodID = []
 
-    id = 0
-    x = 0
-    y = 0
-    r = 0
-    g = 0
-    b = 0
-    fi = 0
+
     removed = 0
     isStuck = 0
     infraredRadius = 200
     radius = 0
-    ID_last = []
+    foodID_last = []
 
     def drawKilobot(self, screen):
         pygame.draw.circle(screen, (self.r, self.g, self.b), (int(self.x), int(self.y)), self.radius)
@@ -156,6 +142,20 @@ class Kilobot:
                 y_temp > (resy - self.radius - 55 + 1)):
             return True
 
+    def isIdPresent(self,inID):
+        for itr in self.inIRRangeKilobotID:
+            if itr == inID:
+                return True
+        else:
+            return False
+
+    def isFoodIdPresent(self,inID):
+        for itr in self.inIRRangeFoodID:
+            if itr == inID:
+                return True
+        else:
+            return False
+
     def detectKilobotsInIRRange(self, kilobotArray):
         for botItr in kilobotArray:
             xDif = fabs(self.x - botItr.x)
@@ -164,17 +164,27 @@ class Kilobot:
             if botItr.id == self.id:
                 continue
             elif Dif.real < 2 * self.infraredRadius + 1:
-                if not isIdPresent(botItr.id, self.inIRRangeKilobotID):
+                if not botItr.isFoodIdPresent(botItr.id):
                     self.inIRRangeKilobotID.append(botItr.id)
 
+    def detectFoodsInIRRange(self, FoodsArray):
+        for foodItr in FoodsArray:
+            xDif = fabs(self.x - foodItr.x)
+            yDif = fabs(self.y - foodItr.y)
+            Dif = sqrt(xDif ** 2 + yDif ** 2)
+            if Dif.real < 2 * self.infraredRadius + 1:
+                if not foodItr.isIdPresent(foodItr.id):
+                    IDandDistance = [foodItr.id, round(Dif.real, 2)]
+                    self.inIRRangeFoodID.append(IDandDistance)
+
     def findClosestFood(self):
-        if len(self.ID_last) != 0:
-            closest = self.ID_last[0][1]
+        if len(self.foodID_last) != 0:
+            closest = self.foodID_last[0][1]
             closest_id = 0
 
-            for food in range(0, len(self.ID_last)):
-                if self.ID_last[food][1] < closest:
-                    closest = self.ID_last[food][1]
+            for food in range(0, len(self.foodID_last)):
+                if self.foodID_last[food][1] < closest:
+                    closest = self.foodID_last[food][1]
                     closest_id = food
             return closest_id
         else:

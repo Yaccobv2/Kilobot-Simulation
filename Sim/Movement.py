@@ -123,10 +123,10 @@ def kilobotsMovement(enableTag, kilobotsArray, resx, resy, screen):
             M1 = 255
             M2 = 255
             # if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, forward, 5 * move):
-            if closestFood is not ValueError and len(it.inIRRangeKilobotID) == len(it.ID_last):
-                if len(it.ID_last) > 0:
-                    if it.inIRRangeKilobotID[closestFood][1] > 30:
-                        if it.ID_last[closestFood][1] >= it.inIRRangeKilobotID[closestFood][1]:
+            if closestFood is not ValueError and len(it.inIRRangeFoodID) == len(it.foodID_last):
+                if len(it.foodID_last) > 0:
+                    if it.inIRRangeFoodID[closestFood][1] > 30:
+                        if it.foodID_last[closestFood][1] >= it.inIRRangeFoodID[closestFood][1]:
                             closer = True
                         else:
                             closer = False

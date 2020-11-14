@@ -35,6 +35,7 @@ def checkPlacementCollisionAndTagForRemoval(array, X, Y):
             return True
     return False
 
+
 def isIdPresent(inID, IDIRArray):
     for itr in IDIRArray:
         if itr == inID:
@@ -43,37 +44,22 @@ def isIdPresent(inID, IDIRArray):
         return False
 
 
-#detect kilobots in range
+# detect kilobots in range
 def detectKilobotsInIRRange(kilobotArray):
     for i1 in kilobotArray:
-        for i2 in kilobotArray:
-            if not i1.id == i2.id:
-                xDif = fabs(i1.x - i2.x)
-                yDif = fabs(i1.y - i2.y)
-                Dif = sqrt(xDif ** 2 + yDif ** 2)
-                if Dif.real < 2 * i1.infraredRadius + 1:
-                    if not isIdPresent(i2.id, i1.inIRRangeKilobotID):
-                        i1.inIRRangeKilobotID.append(i2.id)
+        i1.detectKilobotsInIRRange(kilobotArray)
+
 
 # detect food in range
 def detectFoodsInIRRange(kilobotArray, FoodArray):
     for i1 in kilobotArray:
-        for i2 in FoodArray:
-            xDif = fabs(i1.x - i2.x)
-            yDif = fabs(i1.y - i2.y)
-            Dif = sqrt(xDif ** 2 + yDif ** 2)
-            if Dif.real < 2 * i1.infraredRadius + 1:
-                if not isIdPresent(i2.id, i1.inIRRangeKilobotID):
-                    IDandDistance = [i2.id, round(Dif.real, 2)]
-                    i1.inIRRangeKilobotID.append(IDandDistance)
+       i1.detectFoodsInIRRange(FoodArray)
 
 
 # copy range list to check if kilobot is getting closer
-def KilobotsInIRRange_last(kilobotArray):
+def FoodsInIRRange_last(kilobotArray):
     for i1 in kilobotArray:
-        i1.ID_last = i1.inIRRangeKilobotID.copy()
-
-
+        i1.foodID_last = i1.inIRRangeFoodID.copy()
 
 
 # get random int number between -1 and 1
@@ -224,7 +210,6 @@ def inputEventHandler():
             if event.key == pygame.K_SPACE:
                 mousepos = pygame.mouse.get_pos()
                 addSpecialKilobotEvent(mousepos)
-                print("dik")
 
 
 # tworzenie przycisku reset
@@ -246,18 +231,18 @@ while running:
     # update list of food in range
     for itr in kilobots:
         itr.inIRRangeKilobotID.clear()
+        itr.inIRRangeFoodID.clear()
 
-    #to run finding food uncomment detectFoodsInIRRange, KilobotsInIRRange_last and comment detectKilobotsInIRRange
-    #detectFoodsInIRRange(kilobots, Specialkolobot)
+    detectFoodsInIRRange(kilobots, Specialkolobot)
     detectKilobotsInIRRange(kilobots)
 
-
     for itr in kilobots:
+        print(str(itr.id) + ":" + str(itr.inIRRangeFoodID))
         print(str(itr.id) + ":" + str(itr.inIRRangeKilobotID))
 
-    Movement.kilobotsMovement(enable, kilobots, resx, resy,screen)
+    Movement.kilobotsMovement(enable, kilobots, resx, resy, screen)
 
-    #KilobotsInIRRange_last(kilobots)
+    FoodsInIRRange_last(kilobots)
     kilobotClass.drawKilobots(kilobots, screen)
     kilobotClass.drawKilobots(Specialkolobot, screen)
 
