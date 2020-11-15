@@ -91,7 +91,7 @@ kilobotsNumber = 0
 SpecialkilobotID, SpecialkilobotsNumber = 0, 0
 startTime = 0
 enable = False
-Specialkolobot = []
+FoodArray = []
 
 
 def addKilobotEvent(pos):
@@ -124,8 +124,8 @@ def addSpecialKilobotEvent(pos):
     print("Left mouse click at: " + str(pos[0]) + ", " + str(pos[1]))
     if (pos[0] > radiusInput) & (pos[1] > radiusInput) & (pos[0] < (resx - radiusInput)) & (
             pos[1] < (resy - radiusInput - 55)):
-        if not checkPlacementCollision(Specialkolobot, pos[0], pos[1]):
-            Specialkolobot.append(kilobotClass.Kilobot(SpecialkilobotID, pos[0], pos[1], 0, 0, 128, 0, radiusInput))
+        if not checkPlacementCollision(FoodArray, pos[0], pos[1]):
+            FoodArray.append(kilobotClass.Kilobot(SpecialkilobotID, pos[0], pos[1], 0, 0, 128, 0, radiusInput))
             print("Drew kilobot " + str(SpecialkilobotID) + " in x: " + str(pos[0]) + " y: " + str(pos[1]))
             SpecialkilobotID = SpecialkilobotID + 1
             SpecialkilobotsNumber = SpecialkilobotsNumber + 1
@@ -137,7 +137,7 @@ def resetEvent(pos):
     if resetButton.isOver(pos):
         print('clicked reset button')
         kilobots.clear()
-        Specialkolobot.clear()
+        FoodArray.clear()
         kilobotID = 0
         kilobotsNumber = 0
         SpecialkilobotID = 0
@@ -233,18 +233,18 @@ while running:
         itr.inIRRangeKilobotID.clear()
         itr.inIRRangeFoodID.clear()
 
-    detectFoodsInIRRange(kilobots, Specialkolobot)
+    detectFoodsInIRRange(kilobots, FoodArray)
     detectKilobotsInIRRange(kilobots)
 
     for itr in kilobots:
         print(str(itr.id) + ":" + str(itr.inIRRangeFoodID))
         print(str(itr.id) + ":" + str(itr.inIRRangeKilobotID))
 
-    Movement.kilobotsMovement(enable, kilobots, resx, resy, screen)
+    Movement.kilobotsMovement(enable, kilobots,FoodArray, resx, resy, screen)
 
     FoodsInIRRange_last(kilobots)
     kilobotClass.drawKilobots(kilobots, screen)
-    kilobotClass.drawKilobots(Specialkolobot, screen)
+    kilobotClass.drawFoods(FoodArray, screen)
 
     pasueTimer()
 

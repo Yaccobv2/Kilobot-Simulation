@@ -112,7 +112,7 @@ def checkCollisionLoop_Motors(kilobot, kilobots_array_temp, resx, resy, fi_temp)
 #                             it.changeColor(124, 252, 0)
 #             it.drawKilobot(screen)
 
-def kilobotsMovement(enableTag, kilobotsArray, resx, resy, screen):
+def kilobotsMovement(enableTag, kilobotsArray, FoodArray, resx, resy, screen):
     if enableTag:
 
         closer = True
@@ -125,7 +125,7 @@ def kilobotsMovement(enableTag, kilobotsArray, resx, resy, screen):
             # if not checkCollisionLoop_Rotate(it, kilobotsArray, resx, resy, forward, 5 * move):
             if closestFood is not ValueError and len(it.inIRRangeFoodID) == len(it.foodID_last):
                 if len(it.foodID_last) > 0:
-                    if it.inIRRangeFoodID[closestFood][1] > 30:
+                    if not checkCollisionLoop_Motors(it, FoodArray, resx, resy, (M1 - M2) * 0.001) and not checkCollisionLoop_Motors(it, FoodArray, resx, resy, M1 * 0.001):
                         if it.foodID_last[closestFood][1] >= it.inIRRangeFoodID[closestFood][1]:
                             closer = True
                         else:
@@ -138,6 +138,7 @@ def kilobotsMovement(enableTag, kilobotsArray, resx, resy, screen):
                             for k in range(0, 7):
                                 if not checkCollisionLoop_Motors(it, kilobotsArray, resx, resy, M1 * 0.001):
                                     it.MotorsMoveKilobot(M1, 0)
+
 
                     else:
                         it.changeColor(255, 0, 0)
