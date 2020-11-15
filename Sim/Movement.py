@@ -135,7 +135,7 @@ def kilobotsMovement(enableTag, kilobotsArray, FoodArray, resx, resy, screen):
                                 it.MotorsMoveKilobot(M1, M2)
 
                         else:
-                            for k in range(0, 7):
+                            for k in range(0, 1):
                                 if not checkCollisionLoop_Motors(it, kilobotsArray, resx, resy, M1 * 0.001):
                                     it.MotorsMoveKilobot(M1, 0)
 

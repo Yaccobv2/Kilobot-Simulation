@@ -26,7 +26,7 @@ class Kilobot:
         self.inIRRangeKilobotID = []
         self.inIRRangeFoodID = []
         self.front_x = x
-        self.front_y = y - radius + 2
+        self.front_y = y + radius - 2
         self.front_radius = radius - 13
         self.front_r = 0
         self.front_g = 0
