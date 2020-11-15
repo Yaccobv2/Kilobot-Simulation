@@ -1,5 +1,6 @@
 from cmath import sqrt
-from math import fabs, pi, sin, cos
+from math import fabs, pi, sin, cos, degrees, radians, exp
+
 
 import pygame
 
@@ -80,11 +81,12 @@ class Kilobot:
 
     def MotorsMoveKilobot(self, M1, M2):
         M_temp = M1 - M2
-        self.fi = self.fi + M_temp * 0.001
-        xSpeed = sin(self.fi)
-        ySpeed = cos(self.fi)
+        self.fi = self.fi + M_temp*0.01
+        xSpeed = sin(radians(self.fi))
+        ySpeed = cos(radians(self.fi))
         self.x = self.x + xSpeed
         self.y = self.y + ySpeed
+
         if M_temp != 0:
             self.front_x = self.x + xSpeed*13
             self.front_y = self.y + ySpeed*13
