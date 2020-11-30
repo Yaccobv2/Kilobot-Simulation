@@ -11,8 +11,8 @@ import Movement
 pygame.init()
 radiusInput = 15
 
-resx = 600
-resy = 655
+resx = 1200
+resy = 800
 
 
 def checkPlacementCollision(array, X, Y):

@@ -34,11 +34,12 @@ class Kilobot:
         self.front_b = 255
 
     removed = 0
-    isStuck = 0
-    infraredRadius = 200
+    collision = False
+    infraredRadius = 70
     radius = 0
     foodID_last = []
     front_y_conf_val= 2
+    moves=0
 
     def drawKilobot(self, screen):
         pygame.draw.circle(screen, (self.r, self.g, self.b), (int(self.x), int(self.y)), self.radius)
@@ -84,15 +85,15 @@ class Kilobot:
         self.fi = self.fi + M_temp*0.01
         xSpeed = sin(radians(self.fi))
         ySpeed = cos(radians(self.fi))
-        self.x = self.x + xSpeed
-        self.y = self.y + ySpeed
+        self.x = self.x + xSpeed*0.1
+        self.y = self.y + ySpeed*0.1
 
         if M_temp != 0:
             self.front_x = self.x + xSpeed*13
             self.front_y = self.y + ySpeed*13
         else:
-            self.front_x = self.front_x + xSpeed
-            self.front_y = self.front_y + ySpeed
+            self.front_x = self.front_x + xSpeed*0.1
+            self.front_y = self.front_y + ySpeed*0.1
 
     def simple_move(self, x, y):
 
@@ -108,69 +109,69 @@ class Kilobot:
         ySpeed = cos(angle) * speed
         return xSpeed, ySpeed
 
-    # predict collison between two kilobots for simple movement
-    def checkSingleCollisionPrediction(self, self_X, self_Y, X, Y):
-        xSpeed, ySpeed = self.calculateSpeedXY(1)
-        xDif = fabs(self_X - X)
-        yDif = fabs(self_Y - Y)
-        Dif = sqrt(xDif ** 2 + yDif ** 2)
-        if Dif.real < 2 * self.radius + 1:
-            return True
-
-    # predict collison between kilobot and borders for simple movement
-    def checkWallCollisionPrediction(self, self_X, self_Y, resx, resy):
-        if (self_X < self.radius + 1) | (self_Y < self.radius + 1) | (self_X > (resx - self.radius + 1)) | (
-                self_Y > (resy - self.radius - 55 + 1)):
-            return True
-
-    # predict collison between two kilobots for rotation movement
-    def checkCollisionPrediction_Rotaton(self, X, Y, speed, fi_temp):
-        fi_temp = self.fi + fi_temp
-        angle = fi_temp * pi / 180
-        xSpeed = sin(angle) * speed
-        ySpeed = cos(angle) * speed
-        x_temp = self.x + xSpeed
-        y_temp = self.y + ySpeed
-        xDif = fabs(x_temp - X)
-        yDif = fabs(y_temp - Y)
-        Dif = sqrt(xDif ** 2 + yDif ** 2)
-        if Dif.real < 2 * self.radius + 1:
-            return True
-
-    # predict collison between kilobot and borders for rotation movement
-    def checkWallCollisionPrediction_Rotaton(self, resx, resy, speed, fi_temp):
-        fi_temp = self.fi + fi_temp
-        angle = fi_temp * pi / 180
-        xSpeed = sin(angle) * speed
-        ySpeed = cos(angle) * speed
-        x_temp = self.x + xSpeed
-        y_temp = self.y + ySpeed
-        if (x_temp < self.radius + 1) | (y_temp < self.radius + 1) | (x_temp > (resx - self.radius + 1)) | (
-                y_temp > (resy - self.radius - 55 + 1)):
-            return True
+    # # predict collison between two kilobots for simple movement
+    # def checkSingleCollisionPrediction(self, self_X, self_Y, X, Y):
+    #     xSpeed, ySpeed = self.calculateSpeedXY(1)
+    #     xDif = fabs(self_X - X)
+    #     yDif = fabs(self_Y - Y)
+    #     Dif = sqrt(xDif ** 2 + yDif ** 2)
+    #     if Dif.real < 2 * self.radius + 1:
+    #         return True
+    #
+    # # predict collison between kilobot and borders for simple movement
+    # def checkWallCollisionPrediction(self, self_X, self_Y, resx, resy):
+    #     if (self_X < self.radius + 1) | (self_Y < self.radius + 1) | (self_X > (resx - self.radius + 1)) | (
+    #             self_Y > (resy - self.radius - 55 + 1)):
+    #         return True
+    #
+    # # predict collison between two kilobots for rotation movement
+    # def checkCollisionPrediction_Rotaton(self, X, Y, speed, fi_temp):
+    #     fi_temp = self.fi + fi_temp
+    #     angle = fi_temp * pi / 180
+    #     xSpeed = sin(angle) * speed
+    #     ySpeed = cos(angle) * speed
+    #     x_temp = self.x + xSpeed
+    #     y_temp = self.y + ySpeed
+    #     xDif = fabs(x_temp - X)
+    #     yDif = fabs(y_temp - Y)
+    #     Dif = sqrt(xDif ** 2 + yDif ** 2)
+    #     if Dif.real < 2 * self.radius + 1:
+    #         return True
+    #
+    # # predict collison between kilobot and borders for rotation movement
+    # def checkWallCollisionPrediction_Rotaton(self, resx, resy, speed, fi_temp):
+    #     fi_temp = self.fi + fi_temp
+    #     angle = fi_temp * pi / 180
+    #     xSpeed = sin(angle) * speed
+    #     ySpeed = cos(angle) * speed
+    #     x_temp = self.x + xSpeed
+    #     y_temp = self.y + ySpeed
+    #     if (x_temp < self.radius + 1) | (y_temp < self.radius + 1) | (x_temp > (resx - self.radius + 1)) | (
+    #             y_temp > (resy - self.radius - 55 + 1)):
+    #         return True
 
     # predict collison between two kilobots for Motors movement
-    def checkCollisionPrediction_Motors(self, X, Y, fi_temp):
+    def checkCollisionPrediction_Motors(self, X, Y, fi_temp,precison):
         angle = self.fi + fi_temp
         xSpeed = sin(angle)
         ySpeed = cos(angle)
-        x_temp = self.x + xSpeed
-        y_temp = self.y + ySpeed
+        x_temp = self.x + xSpeed*0.1
+        y_temp = self.y + ySpeed*0.1
         xDif = fabs(x_temp - X)
         yDif = fabs(y_temp - Y)
         Dif = sqrt(xDif ** 2 + yDif ** 2)
-        if Dif.real < 2 * self.radius + 0.1:
+        if Dif.real < 2 * self.radius + precison:
             return True
 
     # predict collison between kilobot and borders for Motors movement
-    def checkWallCollisionPrediction_Motors(self, resx, resy, fi_temp):
+    def checkWallCollisionPrediction_Motors(self, resx, resy, fi_temp, precison):
         angle = self.fi + fi_temp
         xSpeed = sin(angle)
         ySpeed = cos(angle)
-        x_temp = self.x + xSpeed
-        y_temp = self.y + ySpeed
-        if (x_temp < self.radius + 0.1) | (y_temp < self.radius + 0.1) | (x_temp > (resx - self.radius + 0.1)) | (
-                y_temp > (resy - self.radius - 55 + 0.1)):
+        x_temp = self.x + xSpeed*0.1
+        y_temp = self.y + ySpeed*0.1
+        if (x_temp < self.radius + precison) | (y_temp < self.radius + precison) | (x_temp > (resx - self.radius - precison)) | (
+                y_temp > (resy - self.radius - 55 - precison)):
             return True
 
     def isIdPresent(self, inID):
@@ -219,4 +220,4 @@ class Kilobot:
                     closest_id = food
             return closest_id
         else:
-            return ValueError
+            return None
