@@ -1,6 +1,8 @@
 from math import fabs, sqrt
 import random2
 import pygame
+import neat
+import os
 
 from button import button
 import kilobotClass
@@ -53,7 +55,7 @@ def detectKilobotsInIRRange(kilobotArray):
 # detect food in range
 def detectFoodsInIRRange(kilobotArray, FoodArray):
     for i1 in kilobotArray:
-       i1.detectFoodsInIRRange(FoodArray)
+        i1.detectFoodsInIRRange(FoodArray)
 
 
 # copy range list to check if kilobot is getting closer
@@ -212,6 +214,48 @@ def inputEventHandler():
                 addSpecialKilobotEvent(mousepos)
 
 
+def ai_basic_start():
+    x = 40
+    for a_i in range(0, 10):
+        position = [x, 100]
+        x = x + 100
+        addKilobotEvent(position)
+
+
+# def run(config_file):
+#     """
+#     runs the NEAT algorithm to train a neural network to play flappy bird.
+#     :param config_file: location of config file
+#     :return: None
+#     """
+#     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
+#                                 neat.DefaultSpeciesSet, neat.DefaultStagnation,
+#                                 config_file)
+#
+#     # Create the population, which is the top-level object for a NEAT run.
+#     p = neat.Population(config)
+#
+#     # Add a stdout reporter to show progress in the terminal.
+#     p.add_reporter(neat.StdOutReporter(True))
+#     stats = neat.StatisticsReporter()
+#     p.add_reporter(stats)
+#     # p.add_reporter(neat.Checkpointer(5))
+#
+#     # Run for up to 50 generations.
+#     winner = p.run(eval_genomes, 50)
+#
+#     # show final stats
+#     print('\nBest genome:\n{!s}'.format(winner))
+#
+#
+# if __name__ == '__main__':
+#     # Determine path to configuration file. This path manipulation is
+#     # here so that the script will run successfully regardless of the
+#     # current working directory.
+#     local_dir = os.path.dirname(__file__)
+#     config_path = os.path.join(local_dir, 'config_neat.txt')
+#     run(config_path)
+
 # tworzenie przycisku reset
 resetButton = button((220, 220, 220), resx - 100, resy - 50, 100, 50, 'Reset', True)
 startButton = button((220, 220, 220), 0, resy - 50, 100, 50, 'Start', True)
@@ -223,7 +267,12 @@ timeView = button((255, 255, 255), resx - 50, 0, 50, 50, str(startTime), False)
 running = True
 t = Timer()
 t_pause = Timer()
+clock = pygame.time.Clock()
+
+ai_basic_start()
+
 while running:
+    clock.tick(120)
     screen.fill((255, 255, 255))
     # random movement
     inputEventHandler()
@@ -240,7 +289,7 @@ while running:
         print(str(itr.id) + ":" + str(itr.inIRRangeFoodID))
         print(str(itr.id) + ":" + str(itr.inIRRangeKilobotID))
 
-    Movement.kilobotsMovement(enable, kilobots,FoodArray, resx, resy, screen)
+    Movement.kilobotsMovement(enable, kilobots, FoodArray, resx, resy, screen)
 
     FoodsInIRRange_last(kilobots)
     kilobotClass.drawKilobots(kilobots, screen)

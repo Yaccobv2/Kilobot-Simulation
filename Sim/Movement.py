@@ -112,54 +112,74 @@ def kilobotsMovement(enableTag, kilobotsArray, FoodArray, resx, resy, screen):
     if enableTag:
 
         closer = True
-
+        it1 = 0
         for it in kilobotsArray:
+            it1 = it1 + 1
+            # find closest food in range
             closestFood = it.findClosestFood()
             M1 = getRandMotorVal()
             M2 = getRandMotorVal()
-            val=getRandBool()
+            val = getRandBool()
             if closestFood is None:
 
                 if not checkCollisionLoop_Motors(it, kilobotsArray, resx, resy, (M1 - M2) * 0.01, 10):
-                    it.MotorsMoveKilobot(M1, M2)
-                    it.collision= False
+                    it.MotorsMoveKilobot(M1, M2,0.5)
+                    it.collision = False
                 else:
                     it.collision = True
             if it.collision:
                 if not checkCollisionLoop_Motors(it, kilobotsArray, resx, resy, M1 * 0.01, 0.01):
-                    it.MotorsMoveKilobot(M1, 0)
+                    it.MotorsMoveKilobot(M1, 0,0.1)
+
+                else:
+                    kilobotsArray.pop(it1 - 1)
 
 
 
 
+#food detected, start moving to food
             else:
                 M1 = 255
                 M2 = 255
                 if closestFood is not ValueError and len(it.inIRRangeFoodID) == len(it.foodID_last):
                     if len(it.foodID_last) > 0:
+                        #chceck if food was found
                         if not checkCollisionLoop_Motors(it, FoodArray, resx, resy,
-                                                         (M1 - M2) * 0.001, 10) and not checkCollisionLoop_Motors(it,
-                                                                                                                  FoodArray,
-                                                                                                                  resx,
-                                                                                                                  resy,
-                                                                                                                  M1 * 0.01,
-                                                                                                                  10):
+                                                         (M1 - M2) * 0.001, 1) and not checkCollisionLoop_Motors(it,
+                                                                                                                 FoodArray,
+                                                                                                                 resx,
+                                                                                                                 resy,
+                                                                                                                 M1 * 0.01,
+                                                                                                               1):
+                            # check if kilobot is getting closer to food
                             if it.foodID_last[closestFood][1] >= it.inIRRangeFoodID[closestFood][1]:
                                 closer = True
                             else:
                                 closer = False
-                            if closer:
-                                if not checkCollisionLoop_Motors(it, kilobotsArray, resx, resy, (M1 - M2) * 0.01, 10):
-                                    it.MotorsMoveKilobot(M1, M2)
-                                    print("X: " + str(it.x) + " Y: " + str(it.y))
 
+                            # move forward if getting closer
+                            if closer:
+                                if not checkCollisionLoop_Motors(it, kilobotsArray, resx, resy, (M1 - M2) * 0.01, 1):
+                                    it.MotorsMoveKilobot(M1, M2,0.5)
+                                    print("X: " + str(it.x) + " Y: " + str(it.y))
+                                    it.collision = False
+                                else:
+                                    it.collision = True
+
+                            # rotate if getting closer
                             else:
                                 for k in range(0, 4):
-                                    if not checkCollisionLoop_Motors(it, kilobotsArray, resx, resy, M1 * 0.01, 10):
-                                        it.MotorsMoveKilobot(M1, 0)
-
+                                    if not checkCollisionLoop_Motors(it, kilobotsArray, resx, resy, M1 * 0.01, 0.01):
+                                        it.MotorsMoveKilobot(M1, 0,0.1)
+                                        it.collision = False
+                                    else:
+                                        it.collision = True
                                     print("X: " + str(it.x) + " Y: " + str(it.y))
 
+                            if it.collision:
+                                kilobotsArray.pop(it1 - 1)
+
+                        #if food was found change color
                         else:
                             it.changeColor(255, 0, 0)
             it.drawKilobot(screen)

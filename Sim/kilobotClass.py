@@ -32,6 +32,7 @@ class Kilobot:
         self.front_r = 0
         self.front_g = 0
         self.front_b = 255
+        self.V=0.5
 
     removed = 0
     collision = False
@@ -80,20 +81,21 @@ class Kilobot:
     def rotateKilobot(self, spinAngle):
         self.fi = self.fi + spinAngle
 
-    def MotorsMoveKilobot(self, M1, M2):
+    def MotorsMoveKilobot(self, M1, M2,V):
+        self.V=V
         M_temp = M1 - M2
         self.fi = self.fi + M_temp*0.01
         xSpeed = sin(radians(self.fi))
         ySpeed = cos(radians(self.fi))
-        self.x = self.x + xSpeed*0.1
-        self.y = self.y + ySpeed*0.1
+        self.x = self.x + xSpeed*self.V
+        self.y = self.y + ySpeed*self.V
 
         if M_temp != 0:
             self.front_x = self.x + xSpeed*13
             self.front_y = self.y + ySpeed*13
         else:
-            self.front_x = self.front_x + xSpeed*0.1
-            self.front_y = self.front_y + ySpeed*0.1
+            self.front_x = self.front_x + xSpeed*V
+            self.front_y = self.front_y + ySpeed*V
 
     def simple_move(self, x, y):
 
@@ -155,8 +157,8 @@ class Kilobot:
         angle = self.fi + fi_temp
         xSpeed = sin(angle)
         ySpeed = cos(angle)
-        x_temp = self.x + xSpeed*0.1
-        y_temp = self.y + ySpeed*0.1
+        x_temp = self.x + xSpeed*self.V
+        y_temp = self.y + ySpeed*self.V
         xDif = fabs(x_temp - X)
         yDif = fabs(y_temp - Y)
         Dif = sqrt(xDif ** 2 + yDif ** 2)
@@ -168,8 +170,8 @@ class Kilobot:
         angle = self.fi + fi_temp
         xSpeed = sin(angle)
         ySpeed = cos(angle)
-        x_temp = self.x + xSpeed*0.1
-        y_temp = self.y + ySpeed*0.1
+        x_temp = self.x + xSpeed*self.V
+        y_temp = self.y + ySpeed*self.V
         if (x_temp < self.radius + precison) | (y_temp < self.radius + precison) | (x_temp > (resx - self.radius - precison)) | (
                 y_temp > (resy - self.radius - 55 - precison)):
             return True
