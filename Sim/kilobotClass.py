@@ -17,6 +17,7 @@ class Kilobot:
 
     def __init__(self, id, x, y, fi, r, g, b, radius):
         self.id = id
+        self.index = id
         self.x = x
         self.y = y
         self.r = r
@@ -33,14 +34,17 @@ class Kilobot:
         self.front_g = 0
         self.front_b = 255
         self.V=0.5
+        self.Fitness = 0
 
     removed = 0
     collision = False
-    infraredRadius = 70
+    infraredRadius = 1000
     radius = 0
     foodID_last = []
     front_y_conf_val= 2
     moves=0
+
+
 
     def drawKilobot(self, screen):
         pygame.draw.circle(screen, (self.r, self.g, self.b), (int(self.x), int(self.y)), self.radius)
@@ -111,6 +115,8 @@ class Kilobot:
         ySpeed = cos(angle) * speed
         return xSpeed, ySpeed
 
+
+
     # # predict collison between two kilobots for simple movement
     # def checkSingleCollisionPrediction(self, self_X, self_Y, X, Y):
     #     xSpeed, ySpeed = self.calculateSpeedXY(1)
@@ -151,6 +157,19 @@ class Kilobot:
     #     if (x_temp < self.radius + 1) | (y_temp < self.radius + 1) | (x_temp > (resx - self.radius + 1)) | (
     #             y_temp > (resy - self.radius - 55 + 1)):
     #         return True
+
+    # chceck wall colisson
+    def checkWallCollision(self, resx, resy):
+        if (self.x < self.radius) | (self.y < self.radius ) | (self.x > (resx - self.radius)) | (
+                self.y > (resy - self.radius - 55 )):
+            return True
+
+    def checkCollisionbetweenKilobots(self, X, Y):
+        xDif = fabs(self.x - X)
+        yDif = fabs(self.y - Y)
+        Dif = sqrt(xDif ** 2 + yDif ** 2)
+        if Dif.real < 2 * self.radius:
+            return True
 
     # predict collison between two kilobots for Motors movement
     def checkCollisionPrediction_Motors(self, X, Y, fi_temp,precison):
@@ -203,11 +222,11 @@ class Kilobot:
 
     def detectFoodsInIRRange(self, FoodsArray):
         for foodItr in FoodsArray:
-            xDif = fabs(self.front_x - foodItr.x)
-            yDif = fabs(self.front_y - foodItr.y)
+            xDif = fabs(self.x - foodItr.x)
+            yDif = fabs(self.y - foodItr.y)
             Dif = sqrt(xDif ** 2 + yDif ** 2)
             if Dif.real < 2 * self.infraredRadius:
-                if not foodItr.isIdPresent(foodItr.id):
+                if not foodItr.isFoodIdPresent(foodItr.id):
                     IDandDistance = [foodItr.id, round(Dif.real, 2)]
                     self.inIRRangeFoodID.append(IDandDistance)
 

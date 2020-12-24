@@ -183,3 +183,27 @@ def kilobotsMovement(enableTag, kilobotsArray, FoodArray, resx, resy, screen):
                         else:
                             it.changeColor(255, 0, 0)
             it.drawKilobot(screen)
+
+
+def AIrotateleft(enableTag, kilobotsArray,id,screen):
+    if enableTag:
+        M1=255
+        M2 = 255
+        kilobotsArray[id].MotorsMoveKilobot(M1, 0, 2)
+        #kilobotsArray[id].rotateKilobot(20)
+        kilobotsArray[id].drawKilobot(screen)
+
+def AIrotateright(enableTag, kilobotsArray, id,screen):
+    if enableTag:
+        M1=255
+        M2 = 255
+        kilobotsArray[id].MotorsMoveKilobot(0, M2, 2)
+        #kilobotsArray[id].rotateKilobot(-20)
+        kilobotsArray[id].drawKilobot(screen)
+
+def AIMoveFront(enableTag, kilobotsArray, id,screen):
+    if enableTag:
+        M1=255
+        M2 = 255
+        kilobotsArray[id].MotorsMoveKilobot(M1, M2, 2)
+        kilobotsArray[id].drawKilobot(screen)
