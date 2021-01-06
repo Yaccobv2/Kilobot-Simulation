@@ -5,9 +5,13 @@ import neat
 import Movement
 import kilobotClass
 import BasicFunc
+import pickle
+import gzip
 
 resx = 1200
 resy = 800
+
+
 
 # def ai_basic_start():
 #     x = 200
@@ -18,43 +22,81 @@ resy = 800
 #         BasicFunc.addSpecialKilobotEvent([500, 300])
 
 
-def run(config_file):
+def run(config_file, genome_path="network.pkl"):
     """
     runs the NEAT algorithm to train a neural network to play flappy bird.
     :param config_file: location of config file
     :return: None
     """
+    global gen
+    gen = BasicFunc.GetGenerationNumber()
+
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                 neat.DefaultSpeciesSet, neat.DefaultStagnation,
                                 config_file)
 
     # Create the population, which is the top-level object for a NEAT run.
     p = neat.Population(config)
+    #p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-89')
 
     # Add a stdout reporter to show progress in the terminal.
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
-    # p.add_reporter(neat.Checkpointer(5))
+    # collect data to save
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
+    # set number of data to save
+    p.add_reporter(neat.Checkpointer(10, None))
 
-    # Run for up to 50 generations.
-    winner = p.run(ai, 500)
+    # Run for up to x generations.
+    winner = p.run(ai_food_finding, 200)
+
+    # save data to file
+    stats.save()
+    # save generation number
+    BasicFunc.SaveGenerationNumber(gen)
 
     # show final stats
     print('\nBest genome:\n{!s}'.format(winner))
 
+    p.remove_reporter(stats)
+
+    # save results
+    with open("network.pkl", "wb") as f:
+        pickle.dump(winner, f)
+        f.close()
 
 
-def ai(genomes, config):
+def run_results(config_file, genome_path="network.pkl"):
+    # Load requried NEAT config
+    global gen
+    gen = BasicFunc.GetGenerationNumber()
+
+    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction, neat.DefaultSpeciesSet,
+                                neat.DefaultStagnation, config_file)
+
+    # Unpickle saved winner
+    with open(genome_path, "rb") as f:
+        genome = pickle.load(f)
+
+    # Convert loaded genome into required data structure
+    genomes = [(1, genome)]
+
+    # Call game with only the loaded genome
+    ai_food_finding(genomes, config)
+
+
+def ai_food_finding(genomes, config):
+    global gen, x_food, y_food
+    gen += 1
     screen = pygame.display.set_mode((resx, resy))
 
     # deklaracja tablicy kilobotow
     kilobotsMaxAmount = 100
     kilobots = []
     kilobots.clear()
-    kilobotID = 0
-    kilobotsNumber = 0
-    SpecialkilobotID, SpecialkilobotsNumber = 0, 0
+    kilobotID, FoodID, kilobotsNumber, FoodNumber = 0, 0, 0, 0
     startTime = 0
     enable = False
     FoodArray = []
@@ -62,7 +104,7 @@ def ai(genomes, config):
     resetButton = button((220, 220, 220), resx - 100, resy - 50, 100, 50, 'Reset', True)
     startButton = button((220, 220, 220), 0, resy - 50, 100, 50, 'Start', True)
     pauseButton = button((220, 220, 220), resx / 2 - 50, resy - 50, 100, 50, 'Pause', True)
-    numberView = button((255, 255, 255), resx / 2 - 50, 50, 100, 50, str(kilobotsNumber), False)
+    numberView = button((255, 255, 255), resx / 2 - 50, 50, 100, 50, str(gen), False)
     timeView = button((255, 255, 255), resx - 50, 0, 50, 50, str(startTime), False)
 
     t = Timer()
@@ -76,41 +118,49 @@ def ai(genomes, config):
 
     # start by creating lists holding the genome itself, the
     # neural network associated with the genome and the
-    # bird object that uses that network to play
+    # kilobot object that uses that network to play
     nets = []
     # kilobots = []
     ge = []
+    x_t = 100
     for genome_id, genome in genomes:
         genome.fitness = 0  # start with fitness level of 0
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         nets.append(net)
-        x_t = 200
-        position = [x_t, 200]
-        x_t = x_t + 100
-        kilobots.append(BasicFunc.addKilobotEvent(position, kilobots, kilobotID))
-        kilobotID += 1
-        ge.append(genome)
-    x = 800
-    y = 600
-    kilobotID = 0
-    position2 = [x, y + 100]
-    FoodArray.append(BasicFunc.addSpecialKilobotEvent(position2, FoodArray, kilobotID, 255, 10, 100))
-    for i in range(0, 3):
-        kilobotID += 1
-        x = x - 80
-        position2 = [x, y]
-        FoodArray.append(BasicFunc.addSpecialKilobotEvent(position2, FoodArray, kilobotID, 0, 128, 0))
-        kilobotID += 1
-        x = x - 80
 
-        position2 = [x, y]
-        FoodArray.append(BasicFunc.addSpecialKilobotEvent(position2, FoodArray, kilobotID, 0, 128, 0))
-        x = x - 100
-        y = y - 100
+        x_t = x_t + 100
+        position = [150, 150]
+        kilobots,kilobotID, kilobotNumber = BasicFunc.addKilobotEventAI(position, kilobots, kilobotID, kilobotsNumber)
+        ge.append(genome)
+
+    # creating food in random place every 50 generations
+    if gen % 30 == 0 or gen == 1:
+        x_food = BasicFunc.getRandX()
+        y_food = BasicFunc.getRandY()
+    # creating food
+    kilobotID = 0
+    position2 = [800, 300]
+    FoodArray, FoodID, FoodNumber = BasicFunc.addSpecialKilobotEvent(position2, FoodArray, FoodID, FoodNumber, 255, 10, 100)
+
+    x = 300
+    y = 100
+    # creating obstacles
+    # for i_y in range(0, 7):
+    #     for i in range(0, 3):
+    #         kilobotID += 1
+    #
+    #         position2 = [x, y]
+    #         FoodArray.append(BasicFunc.addSpecialKilobotEvent(position2, FoodArray, kilobotID, 0, 128, 0))
+    #         kilobotID += 1
+    #         x = x + 200
+    #
+    #     y = y + 100
+    #     x = 300
 
     t, enable, t_pause = BasicFunc.startEventmanual(t, t_pause)
+    closer=False
     while running and len(kilobots) > 0:
-        clock.tick(240)
+        clock.tick(400)
         screen.fill((255, 255, 255))
         # random movement
         # inputEventHandler()
@@ -138,43 +188,72 @@ def ai(genomes, config):
                     closer = True
                 else:
                     closer = False
-                if closer and time > 0:
-                    ge[x].fitness += 1 / kilobot.inIRRangeFoodID[0][1] * 100 / (time * 10)
-                else:
-                    ge[x].fitness -= 1 / kilobot.inIRRangeFoodID[0][1] * 0.01
-            # send bird location, top pipe location and bottom pipe location and determine from network whether to jump or not
-            output = nets[kilobots.index(kilobot)].activate((kilobot.inIRRangeFoodID[0][1],
-                                                             kilobot.inIRRangeFoodID[1][1],
-                                                             kilobot.inIRRangeFoodID[2][1],
-                                                             kilobot.inIRRangeFoodID[3][1],
-                                                             kilobot.inIRRangeFoodID[4][1],
-                                                             kilobot.inIRRangeFoodID[5][1],
-                                                             kilobot.inIRRangeFoodID[6][1]))
 
+                if closer and time > 0:
+                    ge[x].fitness += 3 / kilobot.inIRRangeFoodID[0][1]
+                #     ge[x].fitness += 1 / kilobot.inIRRangeFoodID[0][1] * 100 / (time * 10)
+                # else:
+                #     ge[x].fitness -= 1 / kilobot.inIRRangeFoodID[0][1] * 0.01
+                ge[x].fitness -= 2 / kilobot.inIRRangeFoodID[0][1]
+            # send kilobot position and decide to move or rotate
+            # output = nets[kilobots.index(kilobot)].activate((kilobot.inIRRangeFoodID[0][1],
+            #                                                  kilobot.inIRRangeFoodID[1][1],
+            #                                                  kilobot.inIRRangeFoodID[2][1],
+            #                                                  kilobot.inIRRangeFoodID[3][1],
+            #                                                  kilobot.inIRRangeFoodID[4][1],
+            #                                                  kilobot.inIRRangeFoodID[5][1],
+            #                                                  kilobot.inIRRangeFoodID[6][1],
+            #                                                  kilobot.inIRRangeFoodID[7][1],
+            #                                                  kilobot.inIRRangeFoodID[8][1],
+            #                                                  kilobot.inIRRangeFoodID[9][1],
+            #                                                  kilobot.inIRRangeFoodID[10][1],
+            #                                                  kilobot.inIRRangeFoodID[11][1],
+            #                                                  kilobot.inIRRangeFoodID[12][1],
+            #                                                  kilobot.inIRRangeFoodID[13][1],
+            #                                                  kilobot.inIRRangeFoodID[14][1],
+            #                                                  kilobot.inIRRangeFoodID[15][1],
+            #                                                  kilobot.inIRRangeFoodID[16][1],
+            #                                                  kilobot.inIRRangeFoodID[17][1],
+            #                                                  kilobot.inIRRangeFoodID[18][1],
+            #                                                  kilobot.inIRRangeFoodID[19][1],
+            #                                                  kilobot.inIRRangeFoodID[20][1],
+            #                                                  kilobot.inIRRangeFoodID[21][1]))
+            output = nets[x].activate([kilobot.inIRRangeFoodID[0][1],closer])
+
+
+            #give fitness if closer
+            if kilobot.inIRRangeFoodID[0][1] < 150:
+                ge[x].fitness += 1 / kilobot.inIRRangeFoodID[0][1]
+
+
+           #give fitness if reach goal
             if kilobot.inIRRangeFoodID[0][1] < 30:
                 print("winner")
                 kilobot.changeColor(255, 0, 0)
-                ge[x].fitness = ge[x].fitness + 100 - time * 10
+                ge[x].fitness = ge[x].fitness + 10
                 nets.pop(kilobots.index(kilobot))
                 ge.pop(kilobots.index(kilobot))
                 kilobots.pop(kilobots.index(kilobot))
             else:
-                if not kilobot.checkWallCollision(resx, resy):
-                    #     ge[kilobots.index(kilobot)].fitness -= 0.01
+                # if not kilobot.checkWallCollision(resx, resy):
+                #     ge[kilobots.index(kilobot)].fitness -= 0.01
 
-                    # else:
-                    if output[
-                        0] > 0.5:  # we use a tanh activation function so result will be between -1 and 1. if over 0.5 jump
-                        Movement.AIMoveFront(enable, kilobots, kilobots.index(kilobot), screen)
-                    if output[
-                        1] > 0.5:  # we use a tanh activation function so result will be between -1 and 1. if over 0.5 jump
-                        Movement.AIrotateleft(enable, kilobots, kilobots.index(kilobot), screen)
-                    if output[
-                        2] > 0.5:  # we use a tanh activation function so result will be between -1 and 1. if over 0.5 jump
-                        Movement.AIrotateright(enable, kilobots, kilobots.index(kilobot), screen)
+                # finding the highiest value in outputs
+                max_value = max(output)
+                max_index = output.index(max_value)
 
-        for kilobot in kilobots:
-            # if kilobot.checkWallCollision(resx, resy):
+                if max_index == 0 and output[max_index] > 0.5:
+                    Movement.AIMoveFront(enable, kilobots, kilobots.index(kilobot), screen)
+                if max_index == 1 and output[max_index] > 0.5:
+                    Movement.AIrotateleft(enable, kilobots, kilobots.index(kilobot), screen)
+                if max_index == 2 and output[max_index] > 0.5:
+                    Movement.AIrotateright(enable, kilobots, kilobots.index(kilobot), screen)
+
+
+        for x,kilobot in enumerate(kilobots):
+            if kilobot.checkWallCollision(resx, resy):
+                kilobot.BounceIfWallCollision(resx,resy)
+                ge[x].fitness += 3 / kilobot.inIRRangeFoodID[0][1]
             #     ge[kilobots.index(kilobot)].fitness -= 1
             #     nets.pop(kilobots.index(kilobot))
             #     ge.pop(kilobots.index(kilobot))
@@ -186,16 +265,19 @@ def ai(genomes, config):
             #     ge[kilobots.index(kilobot)].fitness +=0.2
             for food in FoodArray:
                 if FoodArray.index(food) != 0:
-                    if kilobot.checkCollisionbetweenKilobots(food.x, food.y):
-                        ge[kilobots.index(kilobot)].fitness -= 1
-                        nets.pop(kilobots.index(kilobot))
-                        ge.pop(kilobots.index(kilobot))
-                        kilobots.pop(kilobots.index(kilobot))
+                    if food.index == 0:
+                        continue
+                    else:
+                        if kilobot.checkCollisionbetweenKilobots(food.x, food.y):
+                            ge[kilobots.index(kilobot)].fitness -= 2
+                            nets.pop(kilobots.index(kilobot))
+                            ge.pop(kilobots.index(kilobot))
+                            kilobots.pop(kilobots.index(kilobot))
 
         # Movement.kilobotsMovement(enable, kilobots, FoodArray, resx, resy, screen)
 
         for x, kilobot in enumerate(kilobots):
-            if time > 6:
+            if time > 3:
                 # if 2 > ge[x].fitness > -2:
                 #     ge[kilobots.index(kilobot)].fitness -= 1
                 ge[kilobots.index(kilobot)].fitness -= 1
@@ -208,7 +290,7 @@ def ai(genomes, config):
         kilobotClass.drawFoods(FoodArray, screen)
         # t=pasueTimer(t_pause,t)
 
-        numberView.text = str(kilobotsNumber)
+        # numberView.text = str(kilobotsNumber)
         timeView.text = str(t.read_time())
         resetButton.draw(screen)
         startButton.draw(screen)
@@ -217,3 +299,5 @@ def ai(genomes, config):
         timeView.draw(screen)
 
         pygame.display.update()
+
+

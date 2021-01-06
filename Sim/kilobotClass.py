@@ -1,7 +1,6 @@
 from cmath import sqrt
 from math import fabs, pi, sin, cos, degrees, radians, exp
 
-
 import pygame
 
 
@@ -9,9 +8,11 @@ def drawKilobots(kilobotArray, screen):
     for it in kilobotArray:
         it.drawKilobot(screen)
 
+
 def drawFoods(kilobotArray, screen):
     for it in kilobotArray:
         it.drawFood(screen)
+
 
 class Kilobot:
 
@@ -33,22 +34,42 @@ class Kilobot:
         self.front_r = 0
         self.front_g = 0
         self.front_b = 255
-        self.V=0.5
+        self.V = 0.5
         self.Fitness = 0
 
     removed = 0
     collision = False
-    infraredRadius = 1000
+    infraredRadius = 100000
     radius = 0
     foodID_last = []
-    front_y_conf_val= 2
-    moves=0
+    front_y_conf_val = 2
+    moves = 0
+    bounced = False
+    M1Motor_val = 0
+    M2Motor_val = 0
 
+    def GetX(self):
+        return self.x
+
+    def GetY(self):
+        return self.y
+
+    def StoreMotorsValue(self, M1, M2):
+        self.M1Motor_val = M1
+        self.M2Motor_val = M2
+
+    def GetMotorsValue(self):
+        return self.M1Motor_val, self.M2Motor_val
+
+    def SetNewMotorsValue(self,M1,M2):
+        self.M1Motor_val =M1
+        self.M2Motor_val =M2
 
 
     def drawKilobot(self, screen):
         pygame.draw.circle(screen, (self.r, self.g, self.b), (int(self.x), int(self.y)), self.radius)
-        pygame.draw.circle(screen, (self.front_r, self.front_g, self.front_b), (int(self.front_x), int(self.front_y)), self.front_radius)
+        pygame.draw.circle(screen, (self.front_r, self.front_g, self.front_b), (int(self.front_x), int(self.front_y)),
+                           self.front_radius)
 
     def drawFood(self, screen):
         pygame.draw.circle(screen, (self.r, self.g, self.b), (int(self.x), int(self.y)), self.radius)
@@ -58,8 +79,7 @@ class Kilobot:
         self.y = y
 
         self.front_x = x
-        self.front_y = y+self.front_y_conf_val
-
+        self.front_y = y + self.front_y_conf_val
 
     def changeColor(self, r, g, b):
         self.r = r
@@ -81,25 +101,24 @@ class Kilobot:
         self.front_x = self.front_x + xSpeed
         self.front_y = self.front_y + self.front_y_conf_val + ySpeed
 
-
     def rotateKilobot(self, spinAngle):
         self.fi = self.fi + spinAngle
 
-    def MotorsMoveKilobot(self, M1, M2,V):
-        self.V=V
+    def MotorsMoveKilobot(self, M1, M2, V):
+        self.V = V
         M_temp = M1 - M2
-        self.fi = self.fi + M_temp*0.01
+        self.fi = self.fi + M_temp * 0.01
         xSpeed = sin(radians(self.fi))
         ySpeed = cos(radians(self.fi))
-        self.x = self.x + xSpeed*self.V
-        self.y = self.y + ySpeed*self.V
+        self.x = self.x + xSpeed * self.V
+        self.y = self.y + ySpeed * self.V
 
         if M_temp != 0:
-            self.front_x = self.x + xSpeed*13
-            self.front_y = self.y + ySpeed*13
+            self.front_x = self.x + xSpeed * 13
+            self.front_y = self.y + ySpeed * 13
         else:
-            self.front_x = self.front_x + xSpeed*V
-            self.front_y = self.front_y + ySpeed*V
+            self.front_x = self.front_x + xSpeed * V
+            self.front_y = self.front_y + ySpeed * V
 
     def simple_move(self, x, y):
 
@@ -114,8 +133,6 @@ class Kilobot:
         xSpeed = sin(angle) * speed
         ySpeed = cos(angle) * speed
         return xSpeed, ySpeed
-
-
 
     # # predict collison between two kilobots for simple movement
     # def checkSingleCollisionPrediction(self, self_X, self_Y, X, Y):
@@ -160,9 +177,24 @@ class Kilobot:
 
     # chceck wall colisson
     def checkWallCollision(self, resx, resy):
-        if (self.x < self.radius) | (self.y < self.radius ) | (self.x > (resx - self.radius)) | (
-                self.y > (resy - self.radius - 55 )):
+        if (self.x < self.radius) | (self.y < self.radius) | (self.x > (resx - self.radius)) | (
+                self.y > (resy - self.radius - 55)):
             return True
+
+    def BounceIfWallCollision(self, resx, resy):
+        if self.x < self.radius:
+            self.x = self.x + 5
+            self.front_x = self.front_x + 5
+        if self.y < self.radius:
+            self.y = self.y + 5
+            self.front_y = self.front_y + 5
+        if self.x > (resx - self.radius):
+            self.x = self.x - 5
+            self.front_x = self.front_x - 5
+        if self.y > (resy - self.radius - 55):
+            self.y = self.y - 5
+            self.front_y = self.front_y - 5
+        self.bounced = True
 
     def checkCollisionbetweenKilobots(self, X, Y):
         xDif = fabs(self.x - X)
@@ -172,12 +204,12 @@ class Kilobot:
             return True
 
     # predict collison between two kilobots for Motors movement
-    def checkCollisionPrediction_Motors(self, X, Y, fi_temp,precison):
+    def checkCollisionPrediction_Motors(self, X, Y, fi_temp, precison):
         angle = self.fi + fi_temp
         xSpeed = sin(angle)
         ySpeed = cos(angle)
-        x_temp = self.x + xSpeed*self.V
-        y_temp = self.y + ySpeed*self.V
+        x_temp = self.x + xSpeed * self.V
+        y_temp = self.y + ySpeed * self.V
         xDif = fabs(x_temp - X)
         yDif = fabs(y_temp - Y)
         Dif = sqrt(xDif ** 2 + yDif ** 2)
@@ -189,9 +221,10 @@ class Kilobot:
         angle = self.fi + fi_temp
         xSpeed = sin(angle)
         ySpeed = cos(angle)
-        x_temp = self.x + xSpeed*self.V
-        y_temp = self.y + ySpeed*self.V
-        if (x_temp < self.radius + precison) | (y_temp < self.radius + precison) | (x_temp > (resx - self.radius - precison)) | (
+        x_temp = self.x + xSpeed * self.V
+        y_temp = self.y + ySpeed * self.V
+        if (x_temp < self.radius + precison) | (y_temp < self.radius + precison) | (
+                x_temp > (resx - self.radius - precison)) | (
                 y_temp > (resy - self.radius - 55 - precison)):
             return True
 
