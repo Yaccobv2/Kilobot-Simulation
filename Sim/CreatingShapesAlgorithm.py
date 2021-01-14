@@ -12,8 +12,6 @@ resy = 800
 screen = pygame.display.set_mode((resx, resy))
 
 
-
-
 def PIDcontrol():
     global FoodID, kilobotID, kilobotsNumber, FoodNumber
     # creating config data
@@ -34,7 +32,7 @@ def PIDcontrol():
     numberView = button((255, 255, 255), resx / 2 - 50, 50, 100, 50, str(kilobotsNumber), False)
     timeView = button((255, 255, 255), resx - 50, 0, 50, 50, str(startTime), False)
 
-    # timeers and loop config
+    # timers and loop config
     running = True
     t = Timer()
     t_pause = Timer()
@@ -44,10 +42,12 @@ def PIDcontrol():
 
     # main loop
     while running:
-        clock.tick(240)
+        clock.tick(30)
         screen.fill((255, 255, 255))
         # random movement
-        t, enable, t_pause, kilobots, Foods,kilobotID,kilobotsNumber,FoodID, FoodNumber = BasicFunc.inputEventHandler(t, enable, t_pause, kilobots, Foods, kilobotID,kilobotsNumber,FoodID, FoodNumber,startButton,pauseButton,resetButton)
+        t, enable, t_pause, kilobots, Foods, kilobotID, kilobotsNumber, FoodID, FoodNumber = BasicFunc.inputEventHandler(
+            t, enable, t_pause, kilobots, Foods, kilobotID, kilobotsNumber, FoodID, FoodNumber, startButton,
+            pauseButton, resetButton)
 
         # update list of food in range
         for itr in kilobots:
@@ -57,11 +57,11 @@ def PIDcontrol():
         BasicFunc.detectFoodsInIRRange(kilobots, Foods)
         BasicFunc.detectKilobotsInIRRange(kilobots)
 
-        for itr in kilobots:
-            print(str(itr.id) + ":" + str(itr.inIRRangeFoodID))
-            print(str(itr.id) + ":" + str(itr.inIRRangeKilobotID))
+        # for itr in kilobots:
+        #     print(str(itr.id) + ":" + str(itr.inIRRangeFoodID))
+        #     print(str(itr.id) + ":" + str(itr.inIRRangeKilobotID))
 
-        Movement.kilobotsMovement(enable, kilobots, Foods, resx, resy, screen)
+        Movement.kilobotPIDmovement(enable, kilobots, Foods, resx, resy, screen)
 
         BasicFunc.FoodsInIRRange_last(kilobots)
         kilobotClass.drawKilobots(kilobots, screen)

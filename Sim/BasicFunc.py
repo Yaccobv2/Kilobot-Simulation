@@ -9,6 +9,10 @@ radiusInput = 15
 resx = 1200
 resy = 800
 
+
+
+
+
 def GetGenerationNumber():
     f = open("generation_num.txt", "r")
     gen=f.readline()
@@ -115,6 +119,10 @@ def addKilobotEventAI(pos, kilobots, kilobotID, kilobotsNumber):
     kilobotID += 1
     kilobotsNumber += 1
     return kilobots, kilobotID, kilobotsNumber
+
+def addFoodEventAI(pos, FoodArray, FoodID, r, g, b):
+    FoodArray.append(kilobotClass.Kilobot(FoodID, pos[0], pos[1], r, g, b, 0, radiusInput))
+    return FoodArray
 
 
 def removeKilobotEvent(pos, kilobots, kilobotID, kilobotsNumber):

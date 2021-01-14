@@ -36,6 +36,15 @@ class Kilobot:
         self.front_b = 255
         self.V = 0.5
         self.Fitness = 0
+        ##########
+        # PID
+        self.pam = 0.0
+        self.pamUchyb = 0.0
+        self.P = 0
+        self.I = 0
+        self.D = 0
+        self.avg_error = 0
+        ##########
 
     removed = 0
     collision = False
@@ -47,6 +56,7 @@ class Kilobot:
     bounced = False
     M1Motor_val = 0
     M2Motor_val = 0
+    last_closestfood=0
 
     def GetX(self):
         return self.x
@@ -61,10 +71,9 @@ class Kilobot:
     def GetMotorsValue(self):
         return self.M1Motor_val, self.M2Motor_val
 
-    def SetNewMotorsValue(self,M1,M2):
-        self.M1Motor_val =M1
-        self.M2Motor_val =M2
-
+    def SetNewMotorsValue(self, M1, M2):
+        self.M1Motor_val = M1
+        self.M2Motor_val = M2
 
     def drawKilobot(self, screen):
         pygame.draw.circle(screen, (self.r, self.g, self.b), (int(self.x), int(self.y)), self.radius)
@@ -275,3 +284,94 @@ class Kilobot:
             return closest_id
         else:
             return None
+
+    def calcPID(self, ref, meas, KP, KI, KD, ogrP, ogrN, delta):
+        global pam
+        uchyb = (ref - meas)
+        wyP = uchyb * KP
+        wyI = uchyb * KI * delta + self.pam
+        if delta != 0:
+            wyD = ((uchyb - self.pamUchyb) / delta) * KD
+        else:
+            wyD = ((uchyb - self.pamUchyb) / 1) * KD
+
+        if wyI > ogrP:
+            wyI = ogrP
+        if wyI < ogrN:
+            wyI = ogrN
+
+        wy = wyP + wyI + wyD
+
+        if wy > ogrP:
+            wy = ogrP
+        if wy < ogrN:
+            wy = ogrN
+
+        self.pam = wyI
+        self.pamUchyb = uchyb
+
+        return wy
+
+    def calcPI(self, ref, meas, KP, KI, ogrP, ogrN, delta):
+        global pam
+        uchyb = (ref - meas)
+        wyP = uchyb * KP
+        wyI = uchyb * KI * delta + self.pam
+
+        if wyI > ogrP:
+            wyI = ogrP
+        if wyI < ogrN:
+            wyI = ogrN
+
+        wy = wyP + wyI
+
+        if wy > ogrP:
+            wy = ogrP
+        if wy < ogrN:
+            wy = ogrN
+
+        self.pam = wyI
+
+        return wy
+
+    def setPID(self, P, I, D):
+        self.P = P
+        self.I = I
+        self.D = D
+
+    def getPID(self):
+        return self.P, self.I, self.D
+
+    def savePID(self):
+        f = open("PID_val.txt", "w")
+        text = str(round(self.P, 2)) + "," + str(round(self.I, 2)) + "," + str(round(self.D, 2))
+        f.write(str(text))
+        f.close()
+
+    def loadPID(self, idx):
+        f = open("PID_val.txt", "r")
+        text = f.readline()
+
+        # conver to the list
+        text = text.split(",")
+
+        # convert each element as integers
+        values = []
+        for i in text:
+            values.append(float(i))
+
+        # if idx != 0:
+        if idx>15:
+            self.P = values[0]/idx
+            self.I = values[1]/idx
+            self.D = values[2]/idx
+        else:
+            self.P = values[0] + idx
+            self.I = values[1] + idx
+            self.D = values[2] + idx
+        # else:
+        #     self.P = values[0]
+        #     self.I = values[1]
+        #     self.D = values[2]
+
+

@@ -1,11 +1,13 @@
 import kilobotClass
 from math import fabs, sqrt
 import random2
+import BasicFunc
 
 
 # get random int number between -1 and 1
 def getRandSpin():
     return random2.randint(-1, 1)
+
 
 # get random int number between 0 and 255
 def getRandColor():
@@ -193,7 +195,16 @@ def AIrotateleft(enableTag, kilobotsArray, id, screen):
     if enableTag:
         M1 = 255
         M2 = 255
-        kilobotsArray[id].MotorsMoveKilobot(M1, 0, 2)
+        kilobotsArray[id].MotorsMoveKilobot(M1, 0, 0.5)
+        # kilobotsArray[id].rotateKilobot(20)
+        # kilobotsArray[id].drawKilobot(screen)
+
+
+def AIrotateleftHalf(enableTag, kilobotsArray, id, screen):
+    if enableTag:
+        M1 = 255
+        M2 = 255
+        kilobotsArray[id].MotorsMoveKilobot(M1, M2 / 3, 0.5)
         # kilobotsArray[id].rotateKilobot(20)
         # kilobotsArray[id].drawKilobot(screen)
 
@@ -202,7 +213,16 @@ def AIrotateright(enableTag, kilobotsArray, id, screen):
     if enableTag:
         M1 = 255
         M2 = 255
-        kilobotsArray[id].MotorsMoveKilobot(0, M2, 2)
+        kilobotsArray[id].MotorsMoveKilobot(0, M2, 0.5)
+        # kilobotsArray[id].rotateKilobot(-20)
+        # kilobotsArray[id].drawKilobot(screen)
+
+
+def AIrotaterightHalf(enableTag, kilobotsArray, id, screen):
+    if enableTag:
+        M1 = 255
+        M2 = 255
+        kilobotsArray[id].MotorsMoveKilobot(M1 / 3, M2, 0.5)
         # kilobotsArray[id].rotateKilobot(-20)
         # kilobotsArray[id].drawKilobot(screen)
 
@@ -211,7 +231,7 @@ def AIMoveFront(enableTag, kilobotsArray, id, screen):
     if enableTag:
         M1 = 255
         M2 = 255
-        kilobotsArray[id].MotorsMoveKilobot(M1, M2, 2)
+        kilobotsArray[id].MotorsMoveKilobot(M1, M2, 0.5)
         # kilobotsArray[id].drawKilobot(screen)
 
 
@@ -221,46 +241,6 @@ def AIMoveStop(enableTag, kilobotsArray, id, screen):
         M2 = 0
         kilobotsArray[id].MotorsMoveKilobot(M1, M2, 2)
         # kilobotsArray[id].drawKilobot(screen)
-
-
-def AIDynamicMovementL1(enableTag, kilobotsArray, id, screen):
-    if enableTag:
-        M1 = 255
-        M2 = 51
-        kilobotsArray[id].MotorsMoveKilobot(M1, M2, 2)
-        kilobotsArray[id].drawKilobot(screen)
-
-
-def AIDynamicMovementL2(enableTag, kilobotsArray, id, screen):
-    if enableTag:
-        M1 = 204
-        M2 = 102
-        kilobotsArray[id].MotorsMoveKilobot(M1, M2, 0.5)
-        kilobotsArray[id].drawKilobot(screen)
-
-
-def AIDynamicMovementM(enableTag, kilobotsArray, id, screen):
-    if enableTag:
-        M1 = 153
-        M2 = 153
-        kilobotsArray[id].MotorsMoveKilobot(M1, M2, 1)
-        kilobotsArray[id].drawKilobot(screen)
-
-
-def AIDynamicMovementR1(enableTag, kilobotsArray, id, screen):
-    if enableTag:
-        M1 = 51
-        M2 = 255
-        kilobotsArray[id].MotorsMoveKilobot(M1, M2, 2)
-        kilobotsArray[id].drawKilobot(screen)
-
-
-def AIDynamicMovementR2(enableTag, kilobotsArray, id, screen):
-    if enableTag:
-        M1 = 102
-        M2 = 204
-        kilobotsArray[id].MotorsMoveKilobot(M1, M2, 0.5)
-        kilobotsArray[id].drawKilobot(screen)
 
 
 def RandomMovement(enableTag, kilobotsArray, resx, resy):
@@ -286,22 +266,36 @@ def RandomMovement(enableTag, kilobotsArray, resx, resy):
             it1 += 1
 
 
-def RandomMovement_test(enableTag, kilobotsArray, resx, resy, V):
+def kilobotPIDmovement(enableTag, kilobotsArray, FoodArray, resx, resy, screen):
     if enableTag:
 
-        for it in kilobotsArray:
+        for it, kilobot in enumerate(kilobotsArray):
 
-            M1, M2 = it.GetMotorsValue()
+            closestFood = kilobot.findClosestFood()
 
-            if not checkCollisionLoop_Motors(it, kilobotsArray, resx, resy, (M1 - M2) * 0.01, 10):
-                it.MotorsMoveKilobot(M1, M2, V)
-                it.collision = False
-            else:
-                it.collision = True
-            if it.collision:
-                if not checkCollisionLoop_Motors(it, kilobotsArray, resx, resy, M1 * 0.01, 0.01):
-                    it.MotorsMoveKilobot(M1, 0, V)
+            if closestFood is not ValueError and len(kilobot.inIRRangeFoodID) > 0 and len(kilobot.foodID_last) >0:
 
-                else:
-                    it.BounceIfWallCollision(resx, resy)
-            it.StoreMotorsValue(M1, M2)
+                # PIDval = kilobot.calcPI(80, kilobot.inIRRangeFoodID[closestFood][1], 5.2,5.71, 100000, -100000,
+                #                          kilobot.inIRRangeFoodID[closestFood][1] - kilobot.foodID_last[closestFood][1])
+                P,I,D=kilobot.getPID()
+                PIDval = kilobot.calcPI(80, kilobot.inIRRangeFoodID[closestFood][1], P, I, 1000, -1000,
+                                         kilobot.inIRRangeFoodID[closestFood][1] - kilobot.foodID_last[closestFood][1])
+
+                if PIDval >= 60:
+                    AIrotaterightHalf(enableTag, kilobotsArray, it, screen)
+
+                if 60 > PIDval >= 10:
+                    AIrotateright(enableTag, kilobotsArray, it, screen)
+
+                if PIDval <= -40:
+                    AIrotateleftHalf(enableTag, kilobotsArray, it, screen)
+
+                if -5 >= PIDval >= -60:
+                    AIrotateleft(enableTag, kilobotsArray, it, screen)
+
+                if 10 > PIDval > -5:
+                    AIMoveFront(enableTag, kilobotsArray, it, screen)
+
+                # print(PIDval)
+                kilobot.drawKilobot(screen)
+
