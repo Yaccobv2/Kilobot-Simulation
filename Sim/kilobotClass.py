@@ -1,5 +1,6 @@
 from cmath import sqrt
 from math import fabs, pi, sin, cos, degrees, radians, exp
+import pymunk
 
 import pygame
 
@@ -26,17 +27,22 @@ class Kilobot:
         self.b = b
         self.fi = fi
         self.radius = radius
+        ############################
+        # detection of other kilobots
         self.inIRRangeKilobotID = []
         self.inIRRangeFoodID = []
+        ############################
+        # #front head
         self.front_x = x
         self.front_y = y + radius - 2
         self.front_radius = radius - 13
         self.front_r = 0
         self.front_g = 0
         self.front_b = 255
+        ############################
         self.V = 0.5
         self.Fitness = 0
-        ##########
+        ############################
         # PID
         self.pam = 0.0
         self.pamUchyb = 0.0
@@ -44,8 +50,17 @@ class Kilobot:
         self.I = 0
         self.D = 0
         self.avg_error = 0
-        ##########
-
+        ############################
+        #   physics engine
+        self.body = pymunk.Body()
+        self.body.position = (self.x, self.y)
+        self.shape = pymunk.Circle(self.body, self.radius)
+        self.shape.density = 1
+        self.shape.elasticity = 1
+        self.found = 0
+        self.shape.friction = 10
+        ############################
+        
     removed = 0
     collision = False
     infraredRadius = 100000
@@ -113,21 +128,42 @@ class Kilobot:
     def rotateKilobot(self, spinAngle):
         self.fi = self.fi + spinAngle
 
-    def MotorsMoveKilobot(self, M1, M2, V):
-        self.V = V
-        M_temp = M1 - M2
-        self.fi = self.fi + M_temp * 0.01
-        xSpeed = sin(radians(self.fi))
-        ySpeed = cos(radians(self.fi))
-        self.x = self.x + xSpeed * self.V
-        self.y = self.y + ySpeed * self.V
+    def createStticBody(self):
+        self.body.position = (self.x, self.y)
 
-        if M_temp != 0:
-            self.front_x = self.x + xSpeed * 13
-            self.front_y = self.y + ySpeed * 13
-        else:
-            self.front_x = self.front_x + xSpeed * V
-            self.front_y = self.front_y + ySpeed * V
+
+    # def MotorsMoveKilobot(self, M1, M2, V):
+    #     self.V = V
+    #     M_temp = M1 - M2
+    #     self.fi = self.fi + M_temp * 0.01
+    #     xSpeed = sin(radians(self.fi))
+    #     ySpeed = cos(radians(self.fi))
+    #     self.x = self.x + xSpeed * self.V
+    #     self.y = self.y + ySpeed * self.V
+    #
+    #     if M_temp != 0:
+    #         self.front_x = self.x + xSpeed * 13
+    #         self.front_y = self.y + ySpeed * 13
+    #     else:
+    #         self.front_x = self.front_x + xSpeed * V
+    #         self.front_y = self.front_y + ySpeed * V
+    def MotorsMoveKilobot(self, M1, M2, v):
+        M_temp = M1 - M2
+
+        self.fi = self.fi + M_temp * 0.01
+        xSpeed = 55 * sin(radians(self.fi)) * v
+        ySpeed = 55 * cos(radians(self.fi)) * v
+        self.body.angular_velocity = M_temp
+        self.body.velocity = (xSpeed, ySpeed)
+
+
+        self.front_x = self.x + 0.5 * xSpeed
+        self.front_y = self.y + 0.5 * ySpeed
+
+    def refreshCoord(self):
+        self.x = self.body.position[0]
+        self.y = self.body.position[1]
+
 
     def simple_move(self, x, y):
 
@@ -284,6 +320,12 @@ class Kilobot:
             return closest_id
         else:
             return None
+
+    def findLowerIDBot(self):
+        for botID1 in self.inIRRangeKilobotID:
+            if int(botID1[0]) < int(self.id):
+                self.targetBotID = botID1[0]
+                print(str(self.id) + "now follows" + str(self.targetBotID))
 
     def calcPID(self, ref, meas, KP, KI, KD, ogrP, ogrN, delta):
         global pam

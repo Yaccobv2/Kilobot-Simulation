@@ -3,6 +3,8 @@ import random2
 import pygame
 import CreatingShapesAlgorithm
 import kilobotClass
+import pymunk
+import invisibleWall
 
 radiusInput = 15
 
@@ -100,22 +102,21 @@ def getRandY():
     return random2.randint(400, 700)
 
 
-def addKilobotEvent(pos, kilobots, kilobotID, kilobotsNumber):
-    # print("Left mouse click at: " + str(pos[0]) + ", " + str(pos[1]))
+def addKilobotEvent(pos, kilobots, kilobotID, kilobotsNumber,space):
     if not checkPlacementCollision(kilobots, pos[0], pos[1]):
-        kilobots.append(kilobotClass.Kilobot(kilobotID, pos[0], pos[1], 0, 124, 252, 0, radiusInput))
-        # print("Drew kilobot " + str(kilobotID) + " in x: " + str(pos[0]) + " y: " + str(pos[1]))
-        # kilobot_tmp = kilobotClass.Kilobot(kilobotID, pos[0], pos[1], 0, 124, 252, 0, radiusInput)
-    kilobotID += 1
-    kilobotsNumber += 1
-    return kilobots, kilobotID, kilobotsNumber
+
+        kilobot=kilobotClass.Kilobot(kilobotID, pos[0], pos[1], 0, 124, 252, 0, radiusInput)
+        space.add(kilobot.body, kilobot.shape)
+        kilobots.append(kilobot)
+
+        kilobotID += 1
+        kilobotsNumber += 1
+    return kilobots, kilobotID, kilobotsNumber,space
 
 def addKilobotEventAI(pos, kilobots, kilobotID, kilobotsNumber):
-    # print("Left mouse click at: " + str(pos[0]) + ", " + str(pos[1]))
-    # if not checkPlacementCollision(kilobots, pos[0], pos[1]):
+
     kilobots.append(kilobotClass.Kilobot(kilobotID, pos[0], pos[1], 0, 124, 252, 0, radiusInput))
-        # print("Drew kilobot " + str(kilobotID) + " in x: " + str(pos[0]) + " y: " + str(pos[1]))
-        # kilobot_tmp = kilobotClass.Kilobot(kilobotID, pos[0], pos[1], 0, 124, 252, 0, radiusInput)
+
     kilobotID += 1
     kilobotsNumber += 1
     return kilobots, kilobotID, kilobotsNumber
@@ -126,7 +127,6 @@ def addFoodEventAI(pos, FoodArray, FoodID, r, g, b):
 
 
 def removeKilobotEvent(pos, kilobots, kilobotID, kilobotsNumber):
-    print("Right mouse click at: " + str(pos[0]) + ", " + str(pos[1]))
 
     for x in range(len(kilobots)):
         if kilobots[x].removed == 1:
@@ -138,21 +138,24 @@ def removeKilobotEvent(pos, kilobots, kilobotID, kilobotsNumber):
             break
 
 
-def addSpecialKilobotEvent(pos, FoodArray, FoodID, FoodNumber, r, g, b):
-    # print("Left mouse click at: " + str(pos[0]) + ", " + str(pos[1]))
+def addFoodEvent(pos, FoodArray, FoodID, FoodNumber, r, g, b,space):
+
     if not checkPlacementCollision(FoodArray, pos[0], pos[1]):
-        FoodArray.append(kilobotClass.Kilobot(FoodID, pos[0], pos[1], r, g, b, 0, radiusInput))
-        # print("Drew kilobot " + str(kilobotID) + " in x: " + str(pos[0]) + " y: " + str(pos[1]))
-        # kilobot_tmp = kilobotClass.Kilobot(kilobotID, pos[0], pos[1], 0, 124, 252, 0, radiusInput)
+        food = kilobotClass.Kilobot(FoodID, pos[0], pos[1], r, g, b, 0, radiusInput)
+        space.add(food.body, food.shape)
+        food.createStticBody()
+        FoodArray.append(food)
+
     FoodID += 1
     FoodNumber += 1
-    return FoodArray, FoodID, FoodNumber
+    return FoodArray, FoodID, FoodNumber,space
 
 
 def resetEvent(pos, kilobots, FoodArray, t, t_pause):
     print('clicked reset button')
     kilobots.clear()
     FoodArray.clear()
+    space = pymunk.Space()
     kilobotID = 0
     kilobotsNumber = 0
     SpecialkilobotID = 0
@@ -160,11 +163,11 @@ def resetEvent(pos, kilobots, FoodArray, t, t_pause):
     enable = False
     if t.state():
         t.stop()
-        return t, enable, t_pause, kilobots, FoodArray
+        return t, enable, t_pause, kilobots, FoodArray,space
 
     if t_pause.state():
         t_pause.stop()
-        return t, enable, t_pause, kilobots, FoodArray
+        return t, enable, t_pause, kilobots, FoodArray,space
 
 
 def startEvent(pos, t, t_pause):
@@ -205,7 +208,7 @@ def pasueTimer(t_pause, t):
 
 
 def inputEventHandler(t, enable, t_pause, kilobots, Foods, kilobotID, kilobotsNumber, FoodID, FoodNumber, startButton,
-                      pauseButton, resetButton):
+                      pauseButton, resetButton,space):
     global running
     for event in pygame.event.get():
 
@@ -218,10 +221,10 @@ def inputEventHandler(t, enable, t_pause, kilobots, Foods, kilobotID, kilobotsNu
 
                 if (mousepos[0] > radiusInput) & (mousepos[1] > radiusInput) & (mousepos[0] < (resx - radiusInput)) & (
                         mousepos[1] < (resy - radiusInput - 55)):
-                    kilobots, kilobotID, kilobotsNumber = addKilobotEvent(mousepos, kilobots, kilobotID, kilobotsNumber)
+                    kilobots, kilobotID, kilobotsNumber,space = addKilobotEvent(mousepos, kilobots, kilobotID, kilobotsNumber,space)
 
                 if resetButton.isOver(mousepos):
-                    t, enable, t_pause, kilobots, FoodArray = resetEvent(mousepos, kilobots, Foods, t, t_pause)
+                    t, enable, t_pause, kilobots, FoodArray,space = resetEvent(mousepos, kilobots, Foods, t, t_pause)
 
                 if startButton.isOver(mousepos):
                     t, enable, t_pause = startEvent(mousepos, t, t_pause)
@@ -241,6 +244,28 @@ def inputEventHandler(t, enable, t_pause, kilobots, Foods, kilobotID, kilobotsNu
 
                 if (mousepos[0] > radiusInput) & (mousepos[1] > radiusInput) & (mousepos[0] < (resx - radiusInput)) & (
                         mousepos[1] < (resy - radiusInput - 55)):
-                    Foods, FoodID, FoodNumber = addSpecialKilobotEvent(mousepos, Foods, FoodID, FoodNumber, 0, 128, 0)
+                    Foods, FoodID, FoodNumber,space = addFoodEvent(mousepos, Foods, FoodID, FoodNumber, 0, 128, 0,space)
 
-    return t, enable, t_pause, kilobots, Foods, kilobotID, kilobotsNumber, FoodID, FoodNumber
+    return t, enable, t_pause, kilobots, Foods, kilobotID, kilobotsNumber, FoodID, FoodNumber,space
+
+
+def BuildWall(x, y, xSize, ySize, space):
+    wallTemp = invisibleWall.InvisibleWall(x, y, xSize, ySize)
+    space.add(wallTemp.body, wallTemp.shape)
+    return space
+
+
+
+def buildWalls(screen, resx, resy,space):
+    space=BuildWall(0, 0, resx*2, 10,space)
+    space=BuildWall(0, resy-27, resx*2, 50,space)
+    space=BuildWall(0, 0, 20, resy*2,space)
+    space=BuildWall(resx, 0, 20, resy*2,space)
+    return space
+
+
+def drawWalls(screen, resx, resy):
+    pygame.draw.rect(screen, (255, 0, 122), [0, 0, resx, 1])
+    pygame.draw.rect(screen, (255, 0, 122), [0, resy - 50, resx, 50])
+    pygame.draw.rect(screen, (255, 0, 122), [0, 0, 10, resy])
+    pygame.draw.rect(screen, (255, 0, 122), [resx - 10, 0, 10, resy])

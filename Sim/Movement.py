@@ -266,7 +266,7 @@ def RandomMovement(enableTag, kilobotsArray, resx, resy):
             it1 += 1
 
 
-def kilobotPIDmovement(enableTag, kilobotsArray, FoodArray, resx, resy, screen):
+def kilobotPIDmovement(enableTag, kilobotsArray, screen):
     if enableTag:
 
         for it, kilobot in enumerate(kilobotsArray):
@@ -275,11 +275,11 @@ def kilobotPIDmovement(enableTag, kilobotsArray, FoodArray, resx, resy, screen):
 
             if closestFood is not ValueError and len(kilobot.inIRRangeFoodID) > 0 and len(kilobot.foodID_last) >0:
 
-                # PIDval = kilobot.calcPI(80, kilobot.inIRRangeFoodID[closestFood][1], 5.2,5.71, 100000, -100000,
-                #                          kilobot.inIRRangeFoodID[closestFood][1] - kilobot.foodID_last[closestFood][1])
-                P,I,D=kilobot.getPID()
-                PIDval = kilobot.calcPI(80, kilobot.inIRRangeFoodID[closestFood][1], P, I, 1000, -1000,
+                PIDval = kilobot.calcPI(80, kilobot.inIRRangeFoodID[closestFood][1], 5.2,5.71, 100000, -100000,
                                          kilobot.inIRRangeFoodID[closestFood][1] - kilobot.foodID_last[closestFood][1])
+                # P,I,D=kilobot.getPID()
+                # PIDval = kilobot.calcPI(80, kilobot.inIRRangeFoodID[closestFood][1], P, I, 1000, -1000,
+                #                          kilobot.inIRRangeFoodID[closestFood][1] - kilobot.foodID_last[closestFood][1])
 
                 if PIDval >= 60:
                     AIrotaterightHalf(enableTag, kilobotsArray, it, screen)
