@@ -299,6 +299,7 @@ def ai_food_finding(genomes, config):
         pygame.display.update()
 
 
+########################################################################################################################
 def ai_shape_test(genomes, config):
     global gen
     gen += 1
@@ -394,7 +395,7 @@ def ai_shape_test(genomes, config):
 
         BasicFunc.detectFoodsInIRRange(kilobots, Foods)
         BasicFunc.detectKilobotsInIRRange(kilobots)
-        Movement.kilobotPIDmovement(enable, kilobots, Foods, resx, resy, screen)
+        Movement.kilobotPIDmovement(enable, kilobots, screen)
 
         time = t.read_time()
 

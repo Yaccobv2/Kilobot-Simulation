@@ -14,7 +14,7 @@ resy = 800
 screen = pygame.display.set_mode((resx, resy))
 
 
-def PIDcontrol():
+def FindingFood():
     global FoodID, kilobotID, kilobotsNumber, FoodNumber
     # creating config data
     kilobotsMaxAmount = 100
@@ -77,7 +77,7 @@ def PIDcontrol():
         BasicFunc.detectKilobotsInIRRange(kilobots)
 
         # pid movment of kilobots
-        Movement.kilobotPIDmovement(enable, kilobots, screen)
+        Movement.kilobotsFoodFindingMovement(True, kilobots, screen)
 
         BasicFunc.FoodsInIRRange_last(kilobots)
 

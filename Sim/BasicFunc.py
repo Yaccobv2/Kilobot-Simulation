@@ -265,7 +265,7 @@ def buildWalls(screen, resx, resy,space):
 
 
 def drawWalls(screen, resx, resy):
-    pygame.draw.rect(screen, (255, 0, 122), [0, 0, resx, 1])
-    pygame.draw.rect(screen, (255, 0, 122), [0, resy - 50, resx, 50])
-    pygame.draw.rect(screen, (255, 0, 122), [0, 0, 10, resy])
-    pygame.draw.rect(screen, (255, 0, 122), [resx - 10, 0, 10, resy])
+    pygame.draw.rect(screen, (255,255,255), [0, 0, resx, 1])
+    pygame.draw.rect(screen, (255,255,255), [0, resy - 50, resx, 50])
+    pygame.draw.rect(screen, (255,255,255), [0, 0, 10, resy])
+    pygame.draw.rect(screen, (255,255,255), [resx - 10, 0, 10, resy])

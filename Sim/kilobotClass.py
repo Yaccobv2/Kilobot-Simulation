@@ -63,7 +63,7 @@ class Kilobot:
         
     removed = 0
     collision = False
-    infraredRadius = 100000
+    infraredRadius = 100
     radius = 0
     foodID_last = []
     front_y_conf_val = 2
@@ -160,9 +160,11 @@ class Kilobot:
         self.front_x = self.x + 0.5 * xSpeed
         self.front_y = self.y + 0.5 * ySpeed
 
+
     def refreshCoord(self):
         self.x = self.body.position[0]
         self.y = self.body.position[1]
+
 
 
     def simple_move(self, x, y):

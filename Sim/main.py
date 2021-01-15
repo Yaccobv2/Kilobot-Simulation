@@ -2,12 +2,20 @@ import pygame
 import os
 import AI_sim_verion
 import CreatingShapesAlgorithm
+import FoodFindingAlgorithm
 
 # inicjalizacja biblioteki
 pygame.init()
 
-CreatingShapesAlgorithm.PIDcontrol()
 
+FoodFindingAlgorithm.FindingFood()
+
+
+#creating shapes algorithm
+# CreatingShapesAlgorithm.PIDcontrol()
+
+
+# AI learning algorithm
 # if __name__ == '__main__':
 #     # Determine path to configuration file. This path manipulation is
 #     # here so that the script will run successfully regardless of the
