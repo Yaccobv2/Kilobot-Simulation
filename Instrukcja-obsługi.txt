@@ -1,0 +1,15 @@
+Aby uruchomić sumulację konieczne jest zainstalowanie najnowszej wersji python`a oraz IDE(Polecamy PyCharm).
+W środowisku PyCharm należy wybrać odpowiedni interperter, który wskaże ścieżki do bibliotek. Następnie w 
+konfiguracji interpretera wybrać folder główny.
+
+W celu uruchomienia algorytmów poruszania się w szeregu oraz poszukiwania jedzenia należy odkomentować w pliku main.py 
+wywołanie funkcji FoodFinding.Control(). Przełączenie algrytmów polega na naciskaniu: 0 dla algorytmu "FuzzyFoodMovement", 1 dla 
+"FoodFindingMovement", 2 dla "MovementSnake".
+
+W celu uruchomienia algorytmów układania kształtów należy odkomentować odpowiednie cześci kodu w pliku main.py, 
+które zawierają odpowiadające im podpisy oraz nacisnąć start.
+
+ 
+
+
+
