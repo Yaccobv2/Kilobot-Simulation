@@ -13,6 +13,11 @@ class Timer:
         self.elapsed_time = 0
         self.pauseTime = 0
 
+    def set_default(self):
+        self._start_time = None
+        self.elapsed_time = 0
+        self.pauseTime = 0
+
     def start(self):
         """Start a new timer"""
         if self._start_time is not None:
@@ -35,7 +40,7 @@ class Timer:
     def read_time(self):
         if self._start_time is not None:
             self.elapsed_time = round(time.perf_counter() - self._start_time - self.pauseTime, 1)
-            print(f"Elapsed time: {self.elapsed_time} seconds")
+            #print(f"Elapsed time: {self.elapsed_time} seconds")
             return self.elapsed_time
         else:
             self.elapsed_time = 0
